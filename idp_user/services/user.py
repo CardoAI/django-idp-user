@@ -121,8 +121,17 @@ class UserService:
         Invalidate all the entries in the cache for the given user.
         To do this, find all the entries that start with the app identifier and username of the user.
         """
-        if not settings.DEBUG:
-            cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
+        # Attempt Redis delete_pattern
+        key_starts_with = f"{APP_IDENTIFIER}-{user.username}"
+        try:
+            cache.delete_pattern(f"{key_starts_with}*")
+        except AttributeError:
+            # Attempt Django LocMemCache delete
+            for key in cache._cache.keys():  # type: str
+                if key_starts_with in key:
+                    del cache._cache[key]
+
+            # If LocMemCache is not used either, allow any error to be raised
 
     @staticmethod
     @transaction.atomic
