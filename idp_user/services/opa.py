@@ -33,7 +33,7 @@ class OpaService:
             }
         )
 
-        if response != status.HTTP_204_NO_CONTENT:
+        if response.status_code != status.HTTP_204_NO_CONTENT:
             raise Exception("Cannot update OPA data through IDP!")
 
     @staticmethod
