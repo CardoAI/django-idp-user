@@ -129,7 +129,7 @@ class UserService:
             # Attempt Django LocMemCache delete
             for key in cache._cache.keys():  # type: str
                 if key_starts_with in key:
-                    del cache._cache[key]
+                    cache._delete(key)
 
             # If LocMemCache is not used either, allow any error to be raised
 
