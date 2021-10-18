@@ -127,6 +127,8 @@ class OpaAuthMiddleware:
             # it means the policy for this app does not exist in OPA
             # Update OPA with the necessary policy and data in this case
             OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
+            # Reattempt authorize
+            return cls._authorize(request)
 
     @classmethod
     def _get_opa_response(cls, request: WSGIRequest) -> Response:
