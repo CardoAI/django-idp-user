@@ -110,6 +110,7 @@ class UserService:
         ])
         if user:
             update_record(user, **user_data)
+            UserService._invalidate_user_cache_entries(user=user)
             return user
         else:
             return User.objects.create(**user_data)
@@ -149,7 +150,6 @@ class UserService:
                     permission_restrictions=role_data.get('permission_restrictions'),
                     app_config=role_data.get("app_config")
                 )
-                UserService._invalidate_user_cache_entries(user=user)
             else:
                 UserRole.objects.create(
                     user=user,
