@@ -1,27 +1,15 @@
 from collections import defaultdict
-from typing import TypedDict
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import ROLES, UserRole
-from ..typing import UserUpdateEvent, UserFeaturesPermissions
+from ..typing import UserUpdateEvent
 from ..utils.exceptions import AuthException, forbidden
-from ..utils.functions import get_or_none, keep_keys, update_record
-
-
-class UserGroupPermissionsData(TypedDict):
-    id: int
-    feature_permissions: UserFeaturesPermissions
-
-
-ALLOWED_FEATURES = [
-    "dod_manager",
-    "notes_manager",
-    "cash_flow_simulation"
-]
+from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
 
@@ -58,6 +46,7 @@ class UserService:
             )
 
     @staticmethod
+    @cache_user_service_results
     def authorize_resources(user: User, role: ROLES, resource: str, resource_ids: list[int], permission: str = None):
         """
         It specifies if the user is authorized to access the objects/permissions that he is requesting
@@ -89,6 +78,7 @@ class UserService:
             raise AuthException(forbidden(f'You are not allowed to access the resources in the Requested Objects! '))
 
     @staticmethod
+    @cache_user_service_results
     def get_authorized_resources(user: User, role, resource: str) -> list[int]:
         """
         It gets the authorized resources for the group that has been requested.
@@ -108,16 +98,6 @@ class UserService:
         except UserRole.DoesNotExist:
             return []
 
-    # Methods Used by Kafka Consumer to synchronize user/roles and permissions.
-    @staticmethod
-    def _validate_feature_permissions(feature_permissions: UserFeaturesPermissions):
-        if not feature_permissions:
-            return
-
-        for key in feature_permissions.keys():
-            if key not in ALLOWED_FEATURES:
-                raise ValueError(f"Key {key} is invalid as a feature! Acceptable values: {ALLOWED_FEATURES}!")
-
     @staticmethod
     def _create_or_update_user(data: UserUpdateEvent) -> User:
         user = get_or_none(User.objects, username=data.get("username"))
@@ -135,6 +115,15 @@ class UserService:
             return User.objects.create(**user_data)
 
     @staticmethod
+    def _invalidate_user_cache_entries(user: User):
+        """
+        Invalidate all the entries in the cache for the given user.
+        To do this, find all the entries that start with the app identifier and username of the user.
+        """
+        if not settings.DEBUG:
+            cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
+
+    @staticmethod
     @transaction.atomic
     def update_user(data: UserUpdateEvent):
         """
@@ -142,7 +131,7 @@ class UserService:
         for a user are propagated in the internal product Authorization Schemas
 
         Step 1: Create or update User Object
-        Step 2: Create/Update/Delete Group Role for this user.
+        Step 2: Create/Update/Delete User Roles for this user.
         """
 
         user = UserService._create_or_update_user(data)
@@ -160,6 +149,7 @@ class UserService:
                     permission_restrictions=role_data.get('permission_restrictions'),
                     app_config=role_data.get("app_config")
                 )
+                UserService._invalidate_user_cache_entries(user=user)
             else:
                 UserRole.objects.create(
                     user=user,
