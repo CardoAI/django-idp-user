@@ -130,7 +130,9 @@ class OpaAuthMiddleware:
 
     @classmethod
     def _get_opa_response(cls, request: WSGIRequest) -> Response:
-        url = f'http://{settings.OPA_DOMAIN}/{settings.OPA_VERSION}/data/{APP_IDENTIFIER}/{settings.APP_ENV}/allow'
+        opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
+        opa_version = settings.IDP_USER_APP['OPA_VERSION']
+        url = f"http://{opa_domain}/{opa_version}/data/{APP_IDENTIFIER}/{settings.APP_ENV}/allow"
 
         role = request.GET.get('role')
         roles_functionalities = json.loads(cls._get_request_header(request, 'X-ROLES-FUNCTIONALITIES'))
