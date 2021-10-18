@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, TypedDict
+from typing import TypedDict
 
 from django.conf import settings
 from django.db import transaction

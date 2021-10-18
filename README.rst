@@ -19,7 +19,11 @@ Quick start
         "ROLES": "path.to.roles_choices",
         "USE_LOCAL_IDP_IN_DEV": True,
         "USER_UPDATES_TOPIC_NAME": f"{APP_ENV}_user_updates",
-        "FAUST_APP_PATH": "backend.kafka_consumer.app"
+        "FAUST_APP_PATH": "backend.kafka_consumer.app",
+        "REGO_FILE_PATH": "path.to.rego.file",
+        "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
+        "OPA_VERSION": os.getenv("OPA_VERSION"),
+        "IDP_URL": os.getenv("IDP_URL")
     }
 
 3. Run ``python manage.py migrate`` to create the models.

@@ -11,6 +11,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from requests import Response
 
 from ..models import User
+from ..services import OpaService
 from ..typing import JwtData
 from ..utils.exceptions import AuthException, bad_gateway, forbidden, unauthorized
 
@@ -116,9 +117,16 @@ class OpaAuthMiddleware:
         except JSONDecodeError:
             raise AuthException(bad_gateway('Cannot authorize at the moment.'))
 
-        if not response_body.get('result', False):
-            raise AuthException(forbidden())
-        return True
+        try:
+            allow = response_body['result']
+            if not allow:
+                raise AuthException(forbidden())
+            return True
+        except KeyError:
+            # If the key result is not present in the response,
+            # it means the policy for this app does not exist in OPA
+            # Update OPA with the necessary policy and data in this case
+            OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
 
     @classmethod
     def _get_opa_response(cls, request: WSGIRequest) -> Response:
@@ -181,7 +189,6 @@ class OpaAuthMiddlewareDev(OpaAuthMiddleware):
             url=f"http://{os.getenv('IDP_URL')}/api/validate/?app=equalizer",
             headers={
                 "Authorization": request.headers.get('Authorization'),
-                "HTTP_HOST": "localhost"
             }
         )
 
