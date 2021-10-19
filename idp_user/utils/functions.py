@@ -46,4 +46,5 @@ def cache_user_service_results(function):
             cache.set(cache_key, json.dumps(result))
             return result
 
-    return wrapper
+    # Return the original function if USE_REDIS_CACHE is False
+    return wrapper if settings.IDP_APP_ENV.get('USE_REDIS_CACHE', False) else function

@@ -23,7 +23,8 @@ Quick start
         "REGO_FILE_PATH": "path.to.rego.file",
         "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
         "OPA_VERSION": os.getenv("OPA_VERSION"),
-        "IDP_URL": os.getenv("IDP_URL")
+        "IDP_URL": os.getenv("IDP_URL"),
+        "USE_REDIS_CACHE": True
     }
 
 3. Run ``python manage.py migrate`` to create the models.
