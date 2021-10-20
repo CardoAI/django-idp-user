@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             name='UserRole',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('role', models.CharField(choices=[('EqualizerInvestor', 'Investor'), ('EqualizerServicer', 'Servicer'), ('Analyst', 'Analyst'), ('Vdr', 'VDR')], max_length=125)),
+                ('role', models.CharField(max_length=125)),
                 ('app_config', models.JSONField(null=True)),
                 ('permission_restrictions', models.JSONField(default=dict)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='user_roles', to='idp_user.user')),

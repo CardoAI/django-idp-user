@@ -190,7 +190,7 @@ class OpaAuthMiddlewareDev(OpaAuthMiddleware):
     @staticmethod
     def __inject_headers_through_idp(request: WSGIRequest):
         response = requests.get(
-            url=f"http://{os.getenv('IDP_URL')}/api/validate/?app=equalizer",
+            url=f"http://{os.getenv('IDP_URL')}/api/validate/?app={APP_IDENTIFIER}",
             headers={
                 "Authorization": request.headers.get('Authorization'),
             }
