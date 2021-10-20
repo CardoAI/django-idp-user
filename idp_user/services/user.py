@@ -73,10 +73,12 @@ class UserService:
                 if restriction_value is False:
                     raise AuthException(
                         forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
-
-                if not set(resource_ids).issubset(set(restriction_value)):
-                    raise AuthException(
-                        forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+                else:
+                    if not set(resource_ids).issubset(set(restriction_value)):
+                        raise AuthException(
+                            forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+                    else:
+                        return
 
         # Check App config
         if not set(resource_ids).issubset(set(user_role.app_config.get(resource, {}))):
