@@ -157,3 +157,9 @@ class UserService:
                     permission_restrictions=role_data.get('permission_restrictions'),
                     app_config=role_data.get("app_config")
                 )
+
+        # Verify if any of the previous user roles is not being reported anymore
+        # Delete it if this is the case
+        for role, user_role in current_user_roles.items():  # type: str, UserRole
+            if reported_user_app_configs.get(role) is None:
+                user_role.delete()
