@@ -47,7 +47,6 @@ class UserService:
             )
 
     @staticmethod
-    @cache_user_service_results
     def authorize_resources(user: User, role: ROLES, resource: str, resource_ids: list[int], permission: str = None):
         """
         It specifies if the user is authorized to access the objects/permissions that he is requesting
