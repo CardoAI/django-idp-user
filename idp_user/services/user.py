@@ -43,6 +43,7 @@ class UserService:
                 user=user,
                 role=role,
                 resource=resource,
+                permission=permission
             )
 
     @staticmethod
@@ -63,10 +64,10 @@ class UserService:
         Returns: None; In case the requested objects are not accessible  it will raise errors instead.
         """
 
-        user_role_instance = UserRole.objects.get(user=user, role=role)
+        user_role = UserRole.objects.get(user=user, role=role)
 
         if permission:
-            if permission_restriction := user_role_instance.get("permission_restrictions", {}).get(permission):
+            if permission_restriction := user_role.get("permission_restrictions", {}).get(permission):
                 if permission_restriction:
                     return set(resource_ids).issubset(set(permission_restriction.get(resource)))
                 else:
@@ -74,18 +75,20 @@ class UserService:
                         forbidden(f'You are not allowed to access the resources in the Requested Objects! '))
 
         # Check App config
-        if not set(resource_ids).issubset(set(user_role_instance.app_config.get(resource, {}))):
+        if not set(resource_ids).issubset(set(user_role.app_config.get(resource, {}))):
             raise AuthException(forbidden(f'You are not allowed to access the resources in the Requested Objects! '))
 
     @staticmethod
     @cache_user_service_results
-    def get_authorized_resources(user: User, role, resource: str) -> list[int]:
+    def get_authorized_resources(user: User, role, resource: str, permission: str = None) -> list[int]:
         """
         It gets the authorized resources for the group that has been requested.
         Args:
-            user: Logged in User
-            role: ROLES as defined in the settings file.
-            resource: The resource being accessed. For example, vehicle_ids
+            user:           Logged in User
+            role:           ROLES as defined in the settings file.
+            resource:       The resource being accessed. For example, vehicle_ids
+            permission:     In case of specific permissions such as DodManager we can have
+                            permission restrictions through IDP. The value is the name of the permission
 
         Returns:
             Resource Ids
@@ -94,6 +97,12 @@ class UserService:
 
         try:
             user_role = UserRole.objects.get(user=user, role=role)
+
+            if permission:
+                if permission_restriction := user_role.get("permission_restrictions", {}).get(permission):
+                    if permission_restriction:
+                        return permission_restriction.get(resource) or []
+
             return user_role.app_config.get(resource, [])
         except UserRole.DoesNotExist:
             return []
