@@ -100,7 +100,7 @@ class UserService:
 
     @staticmethod
     def _create_or_update_user(data: UserUpdateEvent) -> User:
-        user = get_or_none(User.objects, username=data.get("username"))
+        user = get_or_none(User.objects, username=data.get("idp_user_id"))
         user_data = keep_keys(data, [
             "idp_user_id",
             "username",
