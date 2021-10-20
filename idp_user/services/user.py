@@ -67,16 +67,19 @@ class UserService:
         user_role = UserRole.objects.get(user=user, role=role)
 
         if permission:
-            if permission_restriction := user_role.get("permission_restrictions", {}).get(permission):
-                if permission_restriction:
-                    return set(resource_ids).issubset(set(permission_restriction.get(resource)))
-                else:
+            permission_restrictions = user_role.permission_restrictions
+            if permission_restrictions and permission in permission_restrictions.keys():
+                permission_restriction = permission_restrictions.get(permission)
+                restriction_value = permission_restriction.get(resource)
+                if restriction_value is False:
                     raise AuthException(
-                        forbidden(f'You are not allowed to access the resources in the Requested Objects! '))
+                        forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+
+                return set(resource_ids).issubset(set(restriction_value))
 
         # Check App config
         if not set(resource_ids).issubset(set(user_role.app_config.get(resource, {}))):
-            raise AuthException(forbidden(f'You are not allowed to access the resources in the Requested Objects! '))
+            raise AuthException(forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
 
     @staticmethod
     @cache_user_service_results
@@ -99,9 +102,10 @@ class UserService:
             user_role = UserRole.objects.get(user=user, role=role)
 
             if permission:
-                if permission_restriction := user_role.get("permission_restrictions", {}).get(permission):
-                    if permission_restriction:
-                        return permission_restriction.get(resource) or []
+                permission_restrictions = user_role.permission_restrictions
+                if permission_restrictions and permission in permission_restrictions.keys():
+                    permission_restriction = permission_restrictions.get(permission)
+                    return permission_restriction.get(resource) or []
 
             return user_role.app_config.get(resource, [])
         except UserRole.DoesNotExist:
