@@ -24,7 +24,8 @@ Quick start
         "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
         "OPA_VERSION": os.getenv("OPA_VERSION"),
         "IDP_URL": os.getenv("IDP_URL"),
-        "USE_REDIS_CACHE": True
+        "USE_REDIS_CACHE": True,
+        "ALLOWED_PATHS": ["/", "..."],
     }
 
 3. Run ``python manage.py migrate`` to create the models.

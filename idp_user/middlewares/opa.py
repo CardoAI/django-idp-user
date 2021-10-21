@@ -17,8 +17,9 @@ from ..utils.exceptions import AuthException, bad_gateway, forbidden, unauthoriz
 
 logger = logging.getLogger(__name__)
 
-
 APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
+
+ALLOWED_PATHS = settings.IDP_USER_APP.get("ALLOWED_PATHS", [])
 
 
 class OpaAuthMiddleware:
@@ -41,10 +42,12 @@ class OpaAuthMiddleware:
 
             # Set the user in the request for later access
             request.cardo_user = self._get_user(jwt_data['username'])
-            return self._get_response(request)
 
         except AuthException as exception:
-            return exception.as_response()
+            if request.path not in ALLOWED_PATHS:
+                return exception.as_response()
+
+        return self._get_response(request)
 
     @classmethod
     def _auth_required(cls, request: WSGIRequest):
@@ -217,7 +220,9 @@ class OpaAuthMiddlewareDev(OpaAuthMiddleware):
             self._verify_jwt_claims(jwt_data, ['user_id', 'username'])
             # Set the user in the request for later access
             request.cardo_user = self._get_user(jwt_data['username'])
-            return self._get_response(request)
 
         except AuthException as exception:
-            return exception.as_response()
+            if request.path not in ALLOWED_PATHS:
+                return exception.as_response()
+
+        return self._get_response(request)
