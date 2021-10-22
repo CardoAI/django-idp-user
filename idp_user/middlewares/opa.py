@@ -21,6 +21,8 @@ APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
 
 ALLOWED_PATHS = settings.IDP_USER_APP.get("ALLOWED_PATHS", [])
 
+USE_OPA = settings.IDP_USER_APP.get('USE_OPA', True)
+
 
 class OpaAuthMiddleware:
     def __init__(self, get_response: Callable):
@@ -110,28 +112,28 @@ class OpaAuthMiddleware:
 
     @classmethod
     def _authorize(cls, request: WSGIRequest):
-        response = cls._get_opa_response(request)
+        if USE_OPA:
+            response = cls._get_opa_response(request)
+            if not response.ok:
+                raise AuthException(bad_gateway('Cannot authorize at the moment.'))
+            try:
+                response_body = response.json()
+            except JSONDecodeError:
+                raise AuthException(bad_gateway('Cannot authorize at the moment.'))
 
-        if not response.ok:
-            raise AuthException(bad_gateway('Cannot authorize at the moment.'))
-
-        try:
-            response_body = response.json()
-        except JSONDecodeError:
-            raise AuthException(bad_gateway('Cannot authorize at the moment.'))
-
-        try:
-            allow = response_body['result']
-            if not allow:
-                raise AuthException(forbidden())
-            return True
-        except KeyError:
-            # If the key result is not present in the response,
-            # it means the policy for this app does not exist in OPA
-            # Update OPA with the necessary policy and data in this case
-            OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
-            # Reattempt authorize
-            return cls._authorize(request)
+            try:
+                allow = response_body['result']
+                if not allow:
+                    raise AuthException(forbidden())
+                return True
+            except KeyError:
+                # If the key result is not present in the response,
+                # it means the policy for this app does not exist in OPA
+                # Update OPA with the necessary policy and data in this case
+                OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
+                # Reattempt authorize
+                return cls._authorize(request)
+        return True
 
     @classmethod
     def _get_opa_response(cls, request: WSGIRequest) -> Response:
