@@ -18,7 +18,7 @@ class OpaService:
         print(f"Uploading policy to {url}...")
 
         # Replace APP_IDENTIFIER and APP_ENV in rego file to match the app environment
-        payload = policy_file \
+        payload = policy_file.decode("utf-8") \
             .replace("{{APP_IDENTIFIER}}", app_identifier) \
             .replace("{{APP_ENV}}", settings.APP_ENV)
         response = requests.put(url, data=payload)
