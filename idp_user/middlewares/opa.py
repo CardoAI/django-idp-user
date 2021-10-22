@@ -36,7 +36,7 @@ class OpaAuthMiddleware:
             # Get jwt payload from access token
             jwt_data = self._get_jwt_payload(request)
             # Check if required user claims are provided
-            self._verify_jwt_claims(jwt_data, ['user_id', 'username'])
+            self._verify_jwt_claims(jwt_data, ['user_id'])
             # Check if user id added by ingress in the request is the same as the user id in the token
             self._verify_user_id(request, jwt_data)
             # Check if user is authorized to retrieve the resource
@@ -99,12 +99,12 @@ class OpaAuthMiddleware:
         return data
 
     @classmethod
-    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal['user_id', 'username']]):
+    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal['user_id']]):
         for claim in claims:
             cls._verify_jwt_claim(jwt_data, claim)
 
     @classmethod
-    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal['user_id', 'username']):
+    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal['user_id']):
         try:
             jwt_data[claim]
         except KeyError:
@@ -220,7 +220,7 @@ class OpaAuthMiddlewareDev(OpaAuthMiddleware):
             # Get jwt payload from access token
             jwt_data = self._get_jwt_payload(request)
             # Check if required user claims are provided
-            self._verify_jwt_claims(jwt_data, ['user_id', 'username'])
+            self._verify_jwt_claims(jwt_data, ['user_id'])
             # Set the user in the request for later access
             request.cardo_user = self._get_user(jwt_data['user_id'])
 
