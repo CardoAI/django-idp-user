@@ -1,4 +1,4 @@
-import os
+import pkgutil
 
 import requests
 from django.conf import settings
@@ -8,24 +8,25 @@ from rest_framework import status
 class OpaService:
     @staticmethod
     def upload_policy_to_opa():
-        with open(os.path.join(settings.BASE_DIR, "policy.rego")) as policy_file:
-            opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
-            opa_version = settings.IDP_USER_APP['OPA_VERSION']
-            app_identifier = settings.IDP_USER_APP['APP_IDENTIFIER']
-            url = f"http://{opa_domain}/{opa_version}/policies/{app_identifier}/{settings.APP_ENV}"
+        policy_file = pkgutil.get_data(__name__, 'policy.rego')
 
-            print(f"Uploading policy to {url}...")
+        opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
+        opa_version = settings.IDP_USER_APP['OPA_VERSION']
+        app_identifier = settings.IDP_USER_APP['APP_IDENTIFIER']
+        url = f"http://{opa_domain}/{opa_version}/policies/{app_identifier}/{settings.APP_ENV}"
 
-            # Replace APP_IDENTIFIER and APP_ENV in rego file to match the app environment
-            payload = policy_file.read() \
-                .replace("{{APP_IDENTIFIER}}", app_identifier) \
-                .replace("{{APP_ENV}}", settings.APP_ENV)
-            response = requests.put(url, data=payload)
+        print(f"Uploading policy to {url}...")
 
-            if response.ok:
-                print("Successfully uploaded policy")
-            else:
-                raise Exception(f"Could not upload policy!")
+        # Replace APP_IDENTIFIER and APP_ENV in rego file to match the app environment
+        payload = policy_file \
+            .replace("{{APP_IDENTIFIER}}", app_identifier) \
+            .replace("{{APP_ENV}}", settings.APP_ENV)
+        response = requests.put(url, data=payload)
+
+        if response.ok:
+            print("Successfully uploaded policy")
+        else:
+            raise Exception(f"Could not upload policy!")
 
     @staticmethod
     def update_opa_data_through_idp(authorization_header):
