@@ -43,7 +43,7 @@ class OpaAuthMiddleware:
             self._authorize(request)
 
             # Set the user in the request for later access
-            request.cardo_user = self._get_user(jwt_data['username'])
+            request.cardo_user = self._get_user(jwt_data['user_id'])
 
         except AuthException as exception:
             if request.path not in ALLOWED_PATHS:
@@ -171,9 +171,9 @@ class OpaAuthMiddleware:
         return request.headers.get(header)
 
     @staticmethod
-    def _get_user(username: str) -> User:
+    def _get_user(user_id: int) -> User:
         try:
-            return User.objects.get(username=username)
+            return User.objects.get(idp_user_id=user_id)
         except User.DoesNotExist:
             raise AuthException(unauthorized())
 
@@ -222,7 +222,7 @@ class OpaAuthMiddlewareDev(OpaAuthMiddleware):
             # Check if required user claims are provided
             self._verify_jwt_claims(jwt_data, ['user_id', 'username'])
             # Set the user in the request for later access
-            request.cardo_user = self._get_user(jwt_data['username'])
+            request.cardo_user = self._get_user(jwt_data['user_id'])
 
         except AuthException as exception:
             if request.path not in ALLOWED_PATHS:
