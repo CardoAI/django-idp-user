@@ -1,3 +1,5 @@
+import os
+
 import requests
 from django.conf import settings
 from rest_framework import status
@@ -6,7 +8,7 @@ from rest_framework import status
 class OpaService:
     @staticmethod
     def upload_policy_to_opa():
-        with open(settings.IDP_USER_APP['REGO_FILE_PATH']) as policy_file:
+        with open(os.path.join(settings.BASE_DIR, "policy.rego")) as policy_file:
             opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
             opa_version = settings.IDP_USER_APP['OPA_VERSION']
             app_identifier = settings.IDP_USER_APP['APP_IDENTIFIER']
@@ -14,8 +16,10 @@ class OpaService:
 
             print(f"Uploading policy to {url}...")
 
-            # Replace APP_ENV in rego file to match the app environment
-            payload = policy_file.read().replace("{{APP_ENV}}", settings.APP_ENV)
+            # Replace APP_IDENTIFIER and APP_ENV in rego file to match the app environment
+            payload = policy_file.read() \
+                .replace("{{APP_IDENTIFIER}}", app_identifier) \
+                .replace("{{APP_ENV}}", settings.APP_ENV)
             response = requests.put(url, data=payload)
 
             if response.ok:
