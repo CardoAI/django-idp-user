@@ -112,28 +112,29 @@ class OpaAuthMiddleware:
 
     @classmethod
     def _authorize(cls, request: WSGIRequest):
-        if USE_OPA:
-            response = cls._get_opa_response(request)
-            if not response.ok:
-                raise AuthException(bad_gateway('Cannot authorize at the moment.'))
-            try:
-                response_body = response.json()
-            except JSONDecodeError:
-                raise AuthException(bad_gateway('Cannot authorize at the moment.'))
+        if not USE_OPA:
+            return True
 
-            try:
-                allow = response_body['result']
-                if not allow:
-                    raise AuthException(forbidden())
-                return True
-            except KeyError:
-                # If the key result is not present in the response,
-                # it means the policy for this app does not exist in OPA
-                # Update OPA with the necessary policy and data in this case
-                OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
-                # Reattempt authorize
-                return cls._authorize(request)
-        return True
+        response = cls._get_opa_response(request)
+        if not response.ok:
+            raise AuthException(bad_gateway('Cannot authorize at the moment.'))
+        try:
+            response_body = response.json()
+        except JSONDecodeError:
+            raise AuthException(bad_gateway('Cannot authorize at the moment.'))
+
+        try:
+            allow = response_body['result']
+            if not allow:
+                raise AuthException(forbidden())
+            return True
+        except KeyError:
+            # If the key result is not present in the response,
+            # it means the policy for this app does not exist in OPA
+            # Update OPA with the necessary policy and data in this case
+            OpaService.update_opa(authorization_header=request.headers.get('Authorization'))
+            # Reattempt authorize
+            return cls._authorize(request)
 
     @classmethod
     def _get_opa_response(cls, request: WSGIRequest) -> Response:

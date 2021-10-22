@@ -27,6 +27,7 @@ Quick start
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
         "ALLOWED_PATHS": ["/", "..."],
+        "USE_OPA": True
     }
 
 3. Run ``python manage.py migrate`` to create the models.
