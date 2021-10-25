@@ -13,7 +13,7 @@ class OpaService:
         opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
         opa_version = settings.IDP_USER_APP['OPA_VERSION']
         app_identifier = settings.IDP_USER_APP['APP_IDENTIFIER']
-        url = f"http://{opa_domain}/{opa_version}/policies/{app_identifier}/{settings.APP_ENV}"
+        url = f"{opa_domain}/{opa_version}/policies/{app_identifier}/{settings.APP_ENV}"
 
         print(f"Uploading policy to {url}...")
 
@@ -31,7 +31,7 @@ class OpaService:
     @staticmethod
     def update_opa_data_through_idp(authorization_header):
         response = requests.post(
-            url=f"http://{settings.IDP_USER_APP['IDP_URL']}/api/apps/update_opa_data/",
+            url=f"{settings.IDP_USER_APP['IDP_URL']}/api/apps/update_opa_data/",
             json={'app': settings.IDP_USER_APP['APP_IDENTIFIER']},
             headers={
                 "Authorization": authorization_header,

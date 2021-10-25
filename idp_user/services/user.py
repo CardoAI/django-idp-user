@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from ..models import User
 from ..models.user_role import ROLES, UserRole
 from ..typing import UserUpdateEvent
-from ..utils.exceptions import AuthException, forbidden
+# from ..utils.exceptions import AuthException, forbidden
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']

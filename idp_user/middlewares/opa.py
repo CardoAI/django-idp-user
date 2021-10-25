@@ -48,7 +48,6 @@ class OpaAuthMiddleware:
         except AuthException as exception:
             if request.path not in ALLOWED_PATHS:
                 return exception.as_response()
-
         return self._get_response(request)
 
     @classmethod
