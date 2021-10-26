@@ -31,6 +31,7 @@ Quick start
     }
 
     REST_FRAMEWORK = {
+        'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema' / 'idp_user.schema_extensions.AutoSchemaWithRole',
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'idp_user.auth.AuthenticationBackend',
         ),

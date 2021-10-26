@@ -17,7 +17,7 @@ class BearerTokenScheme(OpenApiAuthenticationExtension):
         }
 
 
-class CustomSchema(AutoSchema):
+class AutoSchemaWithRole(AutoSchema):
     def get_override_parameters(self):
         return [
             OpenApiParameter("role", type=str, location=OpenApiParameter.QUERY, required=True),
