@@ -21,7 +21,6 @@ Quick start
     IDP_USER_APP = {
         "APP_IDENTIFIER": "str",
         "ROLES": "path.to.roles_choices",
-        "USER_UPDATES_TOPIC_NAME": f"{APP_ENV}_user_updates",
         "FAUST_APP_PATH": "backend.kafka_consumer.app",
         "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
         "OPA_VERSION": os.getenv("OPA_VERSION"),
@@ -44,6 +43,7 @@ Quick start
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'idp_user.schema_extensions.BearerTokenScheme',
         ),
+        'SERVE_AUTHENTICATION': ()
     }
 
 3. Run ``python manage.py migrate`` to create the models.

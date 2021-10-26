@@ -38,7 +38,9 @@ class UserRecord(faust.Record):
     app_specific_configs: dict = None
 
 
-user_updates = app.topic(settings.IDP_USER_APP['USER_UPDATES_TOPIC_NAME'], value_type=UserRecord)
+USER_UPDATES_TOPIC_NAME = f"{settings.APP_ENV}_user_updates"
+
+user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
 
 @sync_to_async
