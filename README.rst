@@ -18,8 +18,6 @@ Quick start
 
     AUTH_USER_MODEL = 'idp_user.User'
 
-    IDP_URL = 'http://localhost:8080'
-
     IDP_USER_APP = {
         "APP_IDENTIFIER": "str",
         "ROLES": "path.to.roles_choices",
@@ -30,6 +28,21 @@ Quick start
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
         "INJECT_HEADERS_IN_DEV": True
+    }
+
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'idp_user.auth.AuthenticationBackend',
+        ),
+        'DEFAULT_PERMISSION_CLASSES': (
+            'idp_user.auth.OpaCheckPermission',
+        ),
+    }
+
+    SPECTACULAR_SETTINGS = {
+        'DEFAULT_AUTHENTICATION_CLASSES': (
+            'idp_user.schema_extensions.BearerTokenScheme',
+        ),
     }
 
 3. Run ``python manage.py migrate`` to create the models.
