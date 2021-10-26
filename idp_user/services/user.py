@@ -3,12 +3,12 @@ from collections import defaultdict
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import ROLES, UserRole
 from ..typing import UserUpdateEvent
-# from ..utils.exceptions import AuthException, forbidden
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
@@ -71,18 +71,16 @@ class UserService:
                 permission_restriction = permission_restrictions.get(permission)
                 restriction_value = permission_restriction.get(resource)
                 if restriction_value is False:
-                    raise AuthException(
-                        forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+                    raise PermissionDenied('You are not allowed to access the resources in the Requested Objects!')
                 else:
                     if not set(resource_ids).issubset(set(restriction_value)):
-                        raise AuthException(
-                            forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+                        raise PermissionDenied('You are not allowed to access the resources in the Requested Objects!')
                     else:
                         return
 
         # Check App config
         if not set(resource_ids).issubset(set(user_role.app_config.get(resource, {}))):
-            raise AuthException(forbidden(f'You are not allowed to access the resources in the Requested Objects!'))
+            raise PermissionDenied(f'You are not allowed to access the resources in the Requested Objects!')
 
     @staticmethod
     @cache_user_service_results

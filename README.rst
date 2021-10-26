@@ -16,18 +16,20 @@ Quick start
 
     APP_ENV = "development"/"staging"/"production"
 
+    AUTH_USER_MODEL = 'idp_user.User'
+
+    IDP_URL = 'http://localhost:8080'
+
     IDP_USER_APP = {
         "APP_IDENTIFIER": "str",
         "ROLES": "path.to.roles_choices",
-        "USE_LOCAL_IDP_IN_DEV": True,
         "USER_UPDATES_TOPIC_NAME": f"{APP_ENV}_user_updates",
         "FAUST_APP_PATH": "backend.kafka_consumer.app",
         "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
         "OPA_VERSION": os.getenv("OPA_VERSION"),
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
-        "ALLOWED_PATHS": ["/", "..."],
-        "USE_OPA": True
+        "INJECT_HEADERS_IN_DEV": True
     }
 
 3. Run ``python manage.py migrate`` to create the models.

@@ -12,9 +12,6 @@ from idp_user.services import OpaService
 
 APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
 
-ALLOWED_PATHS = settings.IDP_USER_APP.get("ALLOWED_PATHS", [])
-
-USE_OPA = settings.IDP_USER_APP.get('USE_OPA', True)
 logger = logging.getLogger(__name__)
 
 
