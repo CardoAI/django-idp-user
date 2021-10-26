@@ -10,7 +10,7 @@ from rest_framework.request import Request
 
 from idp_user.models import User
 from idp_user.typing import JwtData
-from idp_user.utils.exceptions import AuthenticationError, MissingHeadersError
+from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +29,15 @@ class AuthenticationBackend(authentication.TokenAuthentication):
 
     @classmethod
     def _access_token_required(cls, request: Request):
-        cls._header_required(request, 'Authorization', 'token.', lambda x: x.startswith('Bearer '))
+        try:
+            cls._header_required(request, 'Authorization', 'token', lambda x: x.startswith('Bearer '))
+        except MissingHeaderError:
+            raise AuthenticationError("Missing Token.")
 
     @classmethod
     def _ingress_headers_required(cls, request: Request):
-        cls._header_required(request, 'X-USER-ID', 'user id.', lambda x: x.isdigit())
-        cls._header_required(request, 'X-ROLES-FUNCTIONALITIES', 'roles functionalities.')
+        cls._header_required(request, 'X-USER-ID', 'User ID', lambda x: x.isdigit())
+        cls._header_required(request, 'X-ROLES-FUNCTIONALITIES', 'roles functionalities')
 
     @classmethod
     def _header_required(
@@ -46,9 +49,9 @@ class AuthenticationBackend(authentication.TokenAuthentication):
     ):
         header = cls._get_request_header(request, header)
         if not header:
-            raise MissingHeadersError()
+            raise MissingHeaderError(header_human_name)
         if validation_func and not validation_func(header):
-            raise MissingHeadersError()
+            raise MissingHeaderError(header_human_name)
 
     @classmethod
     def _verify_user_id(cls, request: Request, jwt_data: JwtData):
@@ -136,7 +139,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             # Set the user in the request for later access
             return self._get_user(jwt_data['user_id']), self
 
-        except MissingHeadersError:
+        except MissingHeaderError:
             if INJECT_HEADERS:
                 request = self.__inject_headers_through_idp(request)
                 if not request:

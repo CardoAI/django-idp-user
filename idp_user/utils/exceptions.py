@@ -8,6 +8,6 @@ class AuthenticationError(Exception):
         super().__init__(detail)
 
 
-class MissingHeadersError(Exception):
-    def __init__(self, detail: str = "Missing Headers Error"):
-        super().__init__(detail)
+class MissingHeaderError(Exception):
+    def __init__(self, header_name):
+        super().__init__(f"Missing header: {header_name}")
