@@ -4,9 +4,9 @@ from json import JSONDecodeError
 
 import requests
 from django.conf import settings
-from django.core.handlers.wsgi import WSGIRequest
 from requests import Response
 from rest_framework import permissions
+from rest_framework.request import Request
 
 from idp_user.services import OpaService
 
@@ -19,7 +19,7 @@ class OpaCheckPermission(permissions.BasePermission):
     message = 'Opa has blocked you from accessing the resource!'
 
     @classmethod
-    def _get_opa_response(cls, request: WSGIRequest) -> Response:
+    def _get_opa_response(cls, request: Request) -> Response:
         opa_domain = settings.IDP_USER_APP['OPA_DOMAIN']
         opa_version = settings.IDP_USER_APP['OPA_VERSION']
         url = f"{opa_domain}/{opa_version}/data/{APP_IDENTIFIER}/{settings.APP_ENV}/allow"
@@ -41,11 +41,11 @@ class OpaCheckPermission(permissions.BasePermission):
         return requests.post(url, json=request_body)
 
     @staticmethod
-    def _get_request_header(request: WSGIRequest, header: str) -> str:
+    def _get_request_header(request: Request, header: str) -> str:
         return request.headers.get(header) or request.META.get(header)
 
     @classmethod
-    def _get_resource_path(cls, request: WSGIRequest) -> str:
+    def _get_resource_path(cls, request: Request) -> str:
         # Get the path as a list (removing leading and trailing /)
         request_path_as_list = request.path.strip('/').split('/')
         # Remove id values from path and add <id> as placeholder instead
