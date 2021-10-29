@@ -46,11 +46,8 @@ class OpaCheckPermission(permissions.BasePermission):
 
     @classmethod
     def _get_resource_path(cls, request: Request) -> str:
-        # Get the path as a list (removing leading and trailing /)
-        request_path_as_list = request.path.strip('/').split('/')
-        # Remove id values from path and add <id> as placeholder instead
-        request_path_as_list = [p if not p.isdigit() else '<id>' for p in request_path_as_list]
-        return '/'.join(request_path_as_list)
+        # Remove leading and trailing /, if present
+        return request.path.strip('/')
 
     def has_permission(self, request, view):
 

@@ -9,6 +9,6 @@ allow = true {
 	some i, j, permission
 	permission = roles_data[input.role][input.allowed_functionalities[i]][j]
 
-	input.path == permission.endpoint
     input.method == permission.method
+    regex.match(permission.endpoint, input.path)
 }
