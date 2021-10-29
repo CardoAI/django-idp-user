@@ -31,7 +31,7 @@ class OpaCheckPermission(permissions.BasePermission):
         request_body = {
             'input': {
                 'allowed_functionalities': allowed_functionalities,
-                'path': cls._get_resource_path(request),
+                'path': request.path,
                 'method': request.method,
                 'role': role
             }
@@ -43,11 +43,6 @@ class OpaCheckPermission(permissions.BasePermission):
     @staticmethod
     def _get_request_header(request: Request, header: str) -> str:
         return request.headers.get(header) or request.META.get(header)
-
-    @classmethod
-    def _get_resource_path(cls, request: Request) -> str:
-        # Remove leading and trailing /, if present
-        return request.path.strip('/')
 
     def has_permission(self, request, view):
 
