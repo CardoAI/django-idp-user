@@ -12,6 +12,7 @@ from ..typing import UserUpdateEvent
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
+IN_DEV = settings.APP_ENV == "development"
 
 
 class UserService:
@@ -135,7 +136,7 @@ class UserService:
         Invalidate all the entries in the cache for the given user.
         To do this, find all the entries that start with the app identifier and username of the user.
         """
-        if settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
+        if settings.IDP_USER_APP.get('USE_REDIS_CACHE', False) and not IN_DEV:
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
     @staticmethod

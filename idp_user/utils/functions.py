@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
+IN_DEV = settings.APP_ENV == "development"
 
 
 def keep_keys(dictionary, keys):
@@ -46,5 +47,7 @@ def cache_user_service_results(function):
             cache.set(cache_key, json.dumps(result))
             return result
 
-    # Return the original function if USE_REDIS_CACHE is False
-    return wrapper if settings.IDP_USER_APP.get('USE_REDIS_CACHE', False) else function
+    if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
+        return function
+
+    return wrapper
