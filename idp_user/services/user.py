@@ -159,7 +159,7 @@ class UserService:
         database. In this way the user can be updated in the correct database.
 
         """
-        reported_user_app_configs = UserService._get_reporeted_user_app_configs(data)
+        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
         app_configs = reported_user_app_configs[APP_IDENTIFIER]
         tenants = app_configs.keys()
 
@@ -188,7 +188,7 @@ class UserService:
         for user_role in user.user_roles.all():
             current_user_roles[user_role.role] = user_role
 
-        reported_user_app_configs = UserService._get_reporeted_user_app_configs(data)
+        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
 
         for role, role_data in reported_user_app_configs.items():
             if existing_user_role := current_user_roles.get(role):
@@ -212,6 +212,5 @@ class UserService:
                 user_role.delete()
 
     @staticmethod
-    def _get_reporeted_user_app_configs(data):
-        reported_user_app_configs = data.get('app_specific_configs', {}).get(APP_IDENTIFIER, {})
-        return reported_user_app_configs
+    def _get_reported_user_app_configs(data):
+        return data.get('app_specific_configs', {}).get(APP_IDENTIFIER, {})
