@@ -17,12 +17,14 @@ app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
     "email": "",
     "app_specific_configs": {
         "app_identifier": {
-            "Servicer": {
-                "app_config": {"vehicle_ids": [1, 2]},
-                "permission_restrictions": {
-                    "synchronizeDoD": False
+            "tenant": {
+                "Servicer": {
+                    "app_config": {"vehicle_ids": [1, 2]},
+                    "permission_restrictions": {
+                        "synchronizeDoD": False
+                    }
                 }
-            }
+            },
         }
     }
 }

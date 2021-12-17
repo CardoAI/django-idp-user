@@ -24,7 +24,8 @@ class AppSpecificConfigs(TypedDict):
     permission_restrictions: dict[str, Union[bool, Any]]
 
 
-UserAppSpecificConfigs = dict[str, AppSpecificConfigs]
+Role = str
+UserAppSpecificConfigs = dict[Role, AppSpecificConfigs]
 
 
 class UserUpdateEvent(TypedDict):
