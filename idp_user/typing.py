@@ -59,3 +59,42 @@ class UserUpdateEvent(TypedDict):
     }
 ]
 """
+
+# ===
+AppIdentifier = str
+TenantIdentifier = str
+
+UserRecordAppSpecificConfigs = dict[AppIdentifier, dict[TenantIdentifier, AppSpecificConfigs]]
+
+
+class UserRecordDict(TypedDict):
+    idp_user_id: int
+    first_name: str = None
+    last_name: str = None
+    username: str = None
+    email: str = None
+    app_specific_configs: UserRecordAppSpecificConfigs = None
+
+
+"""
+Example of a user record from kafka:
+{
+    "first_name": "str",
+    "last_name": "str",
+    "username": "str",
+    "email": "str",
+    "app_specific_configs": {
+        "app_identifier": {
+            'tenant': {
+                "Servicer": {
+                    "app_config": {"vehicle_ids": [1, 2]},
+                    "permission_restrictions": {
+                        "viewDoD": {"vehicle_ids": [1]},
+                        "synchronizeDoD": false
+                    }
+                }
+            }
+        }
+    }
+}
+"""

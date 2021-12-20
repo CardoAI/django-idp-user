@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from ..models import User
 from ..models.user_role import ROLES, UserRole
 from ..signals import pre_update_idp_user, post_update_idp_user
-from ..typing import UserUpdateEvent
+from ..typing import UserUpdateEvent, UserRecordDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class UserService:
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
     @classmethod
-    def update_user(cls, data):
+    def update_user(cls, data: UserRecordDict):
         """
         Extract tenants from the user record and call _update_user for each tenant.
         Remove tenant information from the payload of _update_user since it is not needed
