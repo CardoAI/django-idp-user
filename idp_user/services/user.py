@@ -145,8 +145,7 @@ class UserService:
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
     @classmethod
-    @transaction.atomic
-    def update_user(cls, data: UserUpdateEvent):
+    def update_user(cls, data):
         """
         Extract tenants from the user record and call _update_user for each tenant.
         Remove tenant information from the payload of _update_user since it is not needed
