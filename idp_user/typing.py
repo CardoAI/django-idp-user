@@ -1,4 +1,4 @@
-from typing import TypedDict, Union, List, Any
+from typing import TypedDict, Union, List, Any, Optional
 
 
 class JwtData(TypedDict):
@@ -69,11 +69,11 @@ UserRecordAppSpecificConfigs = dict[AppIdentifier, dict[TenantIdentifier, AppSpe
 
 class UserRecordDict(TypedDict):
     idp_user_id: int
-    first_name: str = None
-    last_name: str = None
-    username: str = None
-    email: str = None
-    app_specific_configs: UserRecordAppSpecificConfigs = None
+    first_name: Optional[str]
+    last_name: Optional[str]
+    username: Optional[str]
+    email: Optional[str]
+    app_specific_configs: UserRecordAppSpecificConfigs
 
 
 """
@@ -85,7 +85,7 @@ Example of a user record from kafka:
     "email": "str",
     "app_specific_configs": {
         "app_identifier": {
-            'tenant': {
+            "tenant": {
                 "Servicer": {
                     "app_config": {"vehicle_ids": [1, 2]},
                     "permission_restrictions": {
