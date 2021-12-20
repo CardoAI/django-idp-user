@@ -17,12 +17,14 @@ app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
     "email": "",
     "app_specific_configs": {
         "app_identifier": {
-            "Servicer": {
-                "app_config": {"vehicle_ids": [1, 2]},
-                "permission_restrictions": {
-                    "synchronizeDoD": False
+            "tenant": {
+                "Servicer": {
+                    "app_config": {"vehicle_ids": [1, 2]},
+                    "permission_restrictions": {
+                        "synchronizeDoD": False
+                    }
                 }
-            }
+            },
         }
     }
 }
@@ -35,7 +37,7 @@ class UserRecord(faust.Record):
     last_name: str = None
     username: str = None
     email: str = None
-    app_specific_configs: dict = None
+    app_specific_configs: dict
 
 
 USER_UPDATES_TOPIC_NAME = f"{settings.APP_ENV}_user_updates"

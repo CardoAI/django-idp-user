@@ -1,4 +1,4 @@
-from typing import TypedDict, Union, List, Any
+from typing import TypedDict, Union, List, Any, Optional
 
 
 class JwtData(TypedDict):
@@ -24,7 +24,8 @@ class AppSpecificConfigs(TypedDict):
     permission_restrictions: dict[str, Union[bool, Any]]
 
 
-UserAppSpecificConfigs = dict[str, AppSpecificConfigs]
+Role = str
+UserAppSpecificConfigs = dict[Role, AppSpecificConfigs]
 
 
 class UserUpdateEvent(TypedDict):
@@ -57,4 +58,43 @@ class UserUpdateEvent(TypedDict):
         }
     }
 ]
+"""
+
+# ===
+AppIdentifier = str
+TenantIdentifier = str
+
+UserRecordAppSpecificConfigs = dict[AppIdentifier, dict[TenantIdentifier, AppSpecificConfigs]]
+
+
+class UserRecordDict(TypedDict):
+    idp_user_id: int
+    first_name: Optional[str]
+    last_name: Optional[str]
+    username: Optional[str]
+    email: Optional[str]
+    app_specific_configs: UserRecordAppSpecificConfigs
+
+
+"""
+Example of a user record from kafka:
+{
+    "first_name": "str",
+    "last_name": "str",
+    "username": "str",
+    "email": "str",
+    "app_specific_configs": {
+        "app_identifier": {
+            "tenant": {
+                "Servicer": {
+                    "app_config": {"vehicle_ids": [1, 2]},
+                    "permission_restrictions": {
+                        "viewDoD": {"vehicle_ids": [1]},
+                        "synchronizeDoD": false
+                    }
+                }
+            }
+        }
+    }
+}
 """

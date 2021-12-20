@@ -1,4 +1,6 @@
+import logging
 from collections import defaultdict
+from copy import deepcopy
 
 from django.conf import settings
 from django.core.cache import cache
@@ -8,8 +10,11 @@ from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import ROLES, UserRole
-from ..typing import UserUpdateEvent
+from ..signals import pre_update_idp_user, post_update_idp_user
+from ..typing import UserUpdateEvent, UserRecordDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
+
+logger = logging.getLogger(__name__)
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
 IN_DEV = settings.APP_ENV == "development"
@@ -139,9 +144,35 @@ class UserService:
         if settings.IDP_USER_APP.get('USE_REDIS_CACHE', False) and not IN_DEV:
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
+    @classmethod
+    def update_user(cls, data: UserRecordDict):
+        """
+        Extract tenants from the user record and call _update_user for each tenant.
+        Remove tenant information from the payload of _update_user since it is not needed
+        inside of it.
+
+        Send signals before and after calling the _update_user method for each tenant
+        separately. This gives possibility to the project to react on the user update.
+
+        One case of handling this signal is to switch database connection to the tenant's
+        database. In this way the user can be updated in the correct database.
+
+        """
+        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
+        app_configs = reported_user_app_configs[APP_IDENTIFIER]
+        tenants = app_configs.keys()
+
+        for tenant in tenants:
+            logger.info(f"Updating user {data['username']} for tenant {tenant}")
+            pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+            user_record_for_tenant = deepcopy(data)
+            user_record_for_tenant['app_specific_configs'] = app_configs[tenant]
+            UserService._update_user(user_record_for_tenant)
+            post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+
     @staticmethod
     @transaction.atomic
-    def update_user(data: UserUpdateEvent):
+    def _update_user(data: UserUpdateEvent):
         """
         This method makes sure that the changes that are coming from the IDP
         for a user are propagated in the internal product Authorization Schemas
@@ -156,7 +187,7 @@ class UserService:
         for user_role in user.user_roles.all():
             current_user_roles[user_role.role] = user_role
 
-        reported_user_app_configs = data.get('app_specific_configs', {}).get(APP_IDENTIFIER, {})
+        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
 
         for role, role_data in reported_user_app_configs.items():
             if existing_user_role := current_user_roles.get(role):
@@ -178,3 +209,7 @@ class UserService:
         for role, user_role in current_user_roles.items():  # type: str, UserRole
             if reported_user_app_configs.get(role) is None:
                 user_role.delete()
+
+    @staticmethod
+    def _get_reported_user_app_configs(data):
+        return data.get('app_specific_configs', {}).get(APP_IDENTIFIER, {})
