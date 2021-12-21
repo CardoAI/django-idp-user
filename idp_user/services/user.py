@@ -159,15 +159,16 @@ class UserService:
 
         """
         reported_user_app_configs = UserService._get_reported_user_app_configs(data)
-        app_configs = reported_user_app_configs[APP_IDENTIFIER]
-        tenants = app_configs.keys()
+        tenants = reported_user_app_configs.keys()
 
         for tenant in tenants:
             logger.info(f"Updating user {data['username']} for tenant {tenant}")
             pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+
             user_record_for_tenant = deepcopy(data)
-            user_record_for_tenant['app_specific_configs'] = app_configs[tenant]
+            user_record_for_tenant['app_specific_configs'] = reported_user_app_configs[tenant]
             UserService._update_user(user_record_for_tenant)
+
             post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
     @staticmethod
