@@ -167,12 +167,13 @@ class UserService:
 
             user_record_for_tenant = deepcopy(data)
             user_record_for_tenant['app_specific_configs'] = reported_user_app_configs[tenant]
-            UserService._update_user(user_record_for_tenant)
+
+            with transaction.atomic(using=tenant):
+                UserService._update_user(user_record_for_tenant)
 
             post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
     @staticmethod
-    @transaction.atomic
     def _update_user(data: UserUpdateEvent):
         """
         This method makes sure that the changes that are coming from the IDP
