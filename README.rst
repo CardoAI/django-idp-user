@@ -26,7 +26,7 @@ Quick start
         "OPA_VERSION": os.getenv("OPA_VERSION"),
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
-        "INJECT_HEADERS_IN_DEV": True
+        "INJECT_HEADERS_IN_DEV": False
     }
 
     REST_FRAMEWORK = {
@@ -47,3 +47,41 @@ Quick start
     }
 
 3. Run ``python manage.py migrate`` to create the models.
+
+Settings Reference
+------------------
+
+* ``APP_IDENTIFIER``
+
+  * The app identifier used in the OPA policy.
+
+* ``ROLES``
+
+  * The path to the roles choices.
+
+* ``FAUST_APP_PATH``
+
+  * The path to the Faust app.
+
+* ``OPA_DOMAIN``
+
+  * The OPA domain.
+
+* ``OPA_VERSION``
+
+  * The OPA version.
+
+* ``IDP_URL``
+
+  * The IDP URL.
+
+* ``USE_REDIS_CACHE``
+
+  * If True, the cache will be used
+  * When developing locally, you can leave this as ``False``.
+
+* ``INJECT_HEADERS_IN_DEV``
+
+  * If True, the authentication headers will be injected in the response in development mode.
+  * Unless you want to setup an IDP server locally for testing purposes,
+    leave this as ``False`` when developing.
