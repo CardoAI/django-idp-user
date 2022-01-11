@@ -10,7 +10,7 @@ from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import ROLES, UserRole
-from ..signals import pre_update_idp_user, post_update_idp_user
+from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
 from ..typing import UserUpdateEvent, UserRecordDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
@@ -133,7 +133,10 @@ class UserService:
             UserService._invalidate_user_cache_entries(user=user)
             return user
         else:
-            return User.objects.create(**user_data)
+            user = User.objects.create(**user_data)
+            post_create_idp_user.send(sender=UserService, user=user)
+
+            return user
 
     @staticmethod
     def _invalidate_user_cache_entries(user: User):
