@@ -37,7 +37,7 @@ class UserRecord(faust.Record):
     last_name: str = None
     username: str = None
     email: str = None
-    app_specific_configs: dict
+    app_specific_configs: dict = None
 
 
 USER_UPDATES_TOPIC_NAME = f"{settings.APP_ENV}_user_updates"
