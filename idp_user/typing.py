@@ -49,6 +49,10 @@ class UserTenantData(TypedDict):
         "last_name": "str",
         "username": "str",
         "email": "str",
+        "is_active": "bool",
+        "is_staff": "bool",
+        "is_superuser": "bool",
+        "date_joined": "datetime"
         "app_specific_configs": {
             "app_identifier": {
                 "Servicer": {
@@ -91,6 +95,10 @@ Example of a user record from kafka:
     "last_name": "str",
     "username": "str",
     "email": "str",
+    "is_active": "bool",
+    "is_staff": "bool",
+    "is_superuser": "bool",
+    "date_joined": "datetime"
     "app_specific_configs": {
         "app_identifier": {
             "tenant": {

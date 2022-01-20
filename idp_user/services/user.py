@@ -5,11 +5,12 @@ from copy import deepcopy
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
+from django.utils.module_loading import import_string
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from ..models import User
-from ..models.user_role import ROLES, UserRole
+from ..models.user_role import UserRole
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
 from ..typing import UserTenantData, UserRecordDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
 IN_DEV = settings.APP_ENV == "development"
+ROLES = import_string(settings.IDP_USER_APP.get('ROLES'))
 
 
 class UserService:
