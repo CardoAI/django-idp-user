@@ -28,7 +28,7 @@ Role = str
 UserAppSpecificConfigs = dict[Role, AppSpecificConfigs]
 
 
-class UserUpdateEvent(TypedDict):
+class UserTenantData(TypedDict):
     idp_user_id: int
     first_name: str
     last_name: str

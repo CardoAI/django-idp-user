@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from ..models import User
 from ..models.user_role import ROLES, UserRole
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
-from ..typing import UserUpdateEvent, UserRecordDict
+from ..typing import UserTenantData, UserRecordDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
@@ -119,7 +119,7 @@ class UserService:
             return []
 
     @staticmethod
-    def _create_or_update_user(data: UserUpdateEvent) -> User:
+    def _create_or_update_user(data: UserTenantData) -> User:
         user = get_or_none(User.objects, idp_user_id=data.get("idp_user_id"))
         user_data = keep_keys(data, [
             "idp_user_id",
@@ -168,16 +168,17 @@ class UserService:
             logger.info(f"Updating user {data['username']} for tenant {tenant}")
             pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
+            # Extract specific tenant information
             user_record_for_tenant = deepcopy(data)
             user_record_for_tenant['app_specific_configs'] = reported_user_app_configs[tenant]
 
             with transaction.atomic(using=tenant):
-                UserService._update_user(user_record_for_tenant)
+                UserService._update_user(user_record_for_tenant)  # type: ignore
 
             post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
     @staticmethod
-    def _update_user(data: UserUpdateEvent):
+    def _update_user(data: UserTenantData):
         """
         This method makes sure that the changes that are coming from the IDP
         for a user are propagated in the internal product Authorization Schemas
@@ -192,9 +193,9 @@ class UserService:
         for user_role in user.user_roles.all():
             current_user_roles[user_role.role] = user_role
 
-        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
+        roles_data = data.get('app_specific_configs')
 
-        for role, role_data in reported_user_app_configs.items():
+        for role, role_data in roles_data.items():
             if existing_user_role := current_user_roles.get(role):
                 update_record(
                     existing_user_role,
@@ -212,7 +213,7 @@ class UserService:
         # Verify if any of the previous user roles is not being reported anymore
         # Delete it if this is the case
         for role, user_role in current_user_roles.items():  # type: str, UserRole
-            if reported_user_app_configs.get(role) is None:
+            if roles_data.get(role) is None:
                 user_role.delete()
 
     @staticmethod
