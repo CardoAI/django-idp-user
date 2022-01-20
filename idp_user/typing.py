@@ -34,6 +34,10 @@ class UserTenantData(TypedDict):
     last_name: str
     username: str
     email: str
+    is_active: bool
+    is_staff: bool
+    is_superuser: bool
+    date_joined: str
     app_specific_configs: UserAppSpecificConfigs
 
 
@@ -45,6 +49,10 @@ class UserTenantData(TypedDict):
         "last_name": "str",
         "username": "str",
         "email": "str",
+        "is_active": "bool",
+        "is_staff": "bool",
+        "is_superuser": "bool",
+        "date_joined": "datetime"
         "app_specific_configs": {
             "app_identifier": {
                 "Servicer": {
@@ -73,6 +81,10 @@ class UserRecordDict(TypedDict):
     last_name: Optional[str]
     username: Optional[str]
     email: Optional[str]
+    is_active: Optional[bool]
+    is_staff: Optional[bool]
+    is_superuser: Optional[bool]
+    date_joined: Optional[str]
     app_specific_configs: UserRecordAppSpecificConfigs
 
 
@@ -83,6 +95,10 @@ Example of a user record from kafka:
     "last_name": "str",
     "username": "str",
     "email": "str",
+    "is_active": "bool",
+    "is_staff": "bool",
+    "is_superuser": "bool",
+    "date_joined": "datetime"
     "app_specific_configs": {
         "app_identifier": {
             "tenant": {
