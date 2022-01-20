@@ -37,6 +37,10 @@ class UserRecord(faust.Record):
     last_name: str = None
     username: str = None
     email: str = None
+    is_active: bool = None
+    is_staff: bool = None
+    is_superuser: bool = None
+    date_joined: str = None
     app_specific_configs: dict = None
 
 

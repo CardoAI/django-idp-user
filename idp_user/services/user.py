@@ -127,6 +127,10 @@ class UserService:
             "email",
             "first_name",
             "last_name",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "date_joined",
         ])
         if user:
             update_record(user, **user_data)
