@@ -96,7 +96,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             pass
 
     @staticmethod
-    def __inject_headers_through_idp(request: Request):
+    def _inject_headers_through_idp(request: Request):
         response = requests.get(
             url=f"{os.getenv('IDP_URL')}/api/validate/?app={APP_IDENTIFIER}",
             headers={
@@ -110,7 +110,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             request.META['X-ROLES-FUNCTIONALITIES'] = response.headers.get('X-ROLES-FUNCTIONALITIES')
             return request
 
-    def __skip_auth_headers_and_opa(self, request: Request):
+    def _skip_auth_headers_and_opa(self, request: Request):
         try:
             # Require access token
             self._access_token_required(request)
@@ -141,11 +141,11 @@ class AuthenticationBackend(authentication.TokenAuthentication):
 
         except MissingHeaderError:
             if INJECT_HEADERS:
-                request = self.__inject_headers_through_idp(request)
+                request = self._inject_headers_through_idp(request)
                 if not request:
                     return None, None
                 return self.authenticate(request)
             else:
-                return self.__skip_auth_headers_and_opa(request)
+                return self._skip_auth_headers_and_opa(request)
         except AuthenticationError:
             return None, None
