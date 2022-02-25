@@ -171,6 +171,10 @@ class UserService:
         tenants = reported_user_app_configs.keys()
 
         for tenant in tenants:
+            if tenant not in settings.DATABASES.keys():
+                logger.info(f"Tenant {tenant} not present, skipping.")
+                continue
+
             logger.info(f"Updating user {data['username']} for tenant {tenant}")
             pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
