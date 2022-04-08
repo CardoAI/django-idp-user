@@ -182,10 +182,11 @@ class UserService:
             user_record_for_tenant = deepcopy(data)
             user_record_for_tenant['app_specific_configs'] = reported_user_app_configs[tenant]
 
-            with transaction.atomic(using=tenant):
-                UserService._update_user(user_record_for_tenant)  # type: ignore
-
-            post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+            try:
+                with transaction.atomic(using=tenant):
+                    UserService._update_user(user_record_for_tenant)  # type: ignore
+            finally:
+                post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
     @staticmethod
     def _update_user(data: UserTenantData):
