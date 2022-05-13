@@ -1,10 +1,11 @@
 import logging
 from collections import defaultdict
 from copy import deepcopy
+from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db import transaction
+from django.db import transaction, models
 from django.utils.module_loading import import_string
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
@@ -12,7 +13,7 @@ from rest_framework.request import Request
 from ..models import User
 from ..models.user_role import UserRole
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
-from ..typing import UserTenantData, UserRecordDict
+from ..typing import UserTenantData, UserRecordDict, ALL
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
@@ -30,93 +31,176 @@ class UserService:
         return request.query_params.get('role')
 
     @staticmethod
-    def authorize_resources_or_get_all_authorized_resources(
+    def authorize_and_get_records_or_get_all_allowed(
             user: User,
             role: ROLES,
-            resource: str,
-            resource_ids: list[int],
+            app_entity_type: str,
+            model: models.Model.__class__,
+            app_entity_records_identifiers: Optional[list[Any]],
             permission: str = None
-    ):
-        if resource_ids:
-            UserService.authorize_resources(
+    ) -> models.QuerySet:
+        """
+        Make sure that the user can access the entity records being requested and return them.
+        If no identifiers are being provided, return all allowed entity records.
+
+        Args:
+            user:                           The user performing the request
+            role:                           The role that the user is acting as.
+            app_entity_type:                The app entity being accessed
+            model:                          The Django model representing the entity being accessed
+            app_entity_records_identifiers: The identifiers of the records belonging to the specified app entity
+            permission:                     In case of specific permissions we can have permission restrictions
+                                                through IDP. The value is the name of the permission
+
+
+        Raises:
+            PermissionDenied: In case the requested records are not allowed
+        """
+
+        if app_entity_records_identifiers:
+            UserService.authorize_app_entity_records(
                 user=user,
                 role=role,
-                resource=resource,
-                resource_ids=resource_ids,
+                app_entity_type=app_entity_type,
+                app_entity_records_identifiers=app_entity_records_identifiers,
                 permission=permission
             )
-            return resource_ids
+            return UserService._get_records(
+                model=model,
+                records_identifiers=app_entity_records_identifiers
+            )
         else:
-            return UserService.get_authorized_resources(
+            return UserService.get_allowed_app_entity_records(
                 user=user,
                 role=role,
-                resource=resource,
+                app_entity_type=app_entity_type,
+                model=model,
                 permission=permission
             )
 
     @staticmethod
-    def authorize_resources(user: User, role: ROLES, resource: str, resource_ids: list[int], permission: str = None):
+    def authorize_app_entity_records(
+            user: User,
+            role: ROLES,
+            app_entity_type: str,
+            app_entity_records_identifiers: list[Any],
+            permission: str = None,
+    ):
         """
-        It specifies if the user is authorized to access the objects/permissions that he is requesting
-        Permissions that do have restrictable=True, are allowed from OPA, so we need to solve this on product level
+        Verify if the user has access to the requested entity records.
+        If a permission is specified and it has restrictable=True, the access is verified based on it.
+
         Args:
-            user:           The user trying to access the resources
-            resource:       Resource name, could be originator_instance_ids; vehicle_ids; portfolio_ids,
-                                depending on how it was set up in IDP.
-            resource_ids:   The ids of the resources within the configuration
-            permission:     In case of specific permissions such as DodManager we can have
-                            permission restrictions through IDP. The value is the name of the permission
-            role:           ROLES as defined in the settings file.
+            user:                           The user performing the request
+            role:                           The role that the user is acting as.
+            app_entity_type:                The app entity being accessed
+            app_entity_records_identifiers: The identifiers of the records belonging to the specified app entity
+            permission:                     In case of specific permissions we can have permission restrictions
+                                                through IDP. The value is the name of the permission
 
-        Returns: None; In case the requested objects are not accessible  it will raise errors instead.
+        Raises:
+            PermissionDenied: In case the requested records are not allowed
         """
 
-        user_role = UserRole.objects.get(user=user, role=role)
+        allowed_app_entity_records_identifiers = UserService._get_allowed_app_entity_records_identifiers(
+            user=user,
+            role=role,
+            app_entity_type=app_entity_type,
+            permission=permission
+        )
 
-        if permission:
-            permission_restrictions = user_role.permission_restrictions
-            if permission_restrictions and permission in permission_restrictions.keys():
-                permission_restriction = permission_restrictions.get(permission)
-                restriction_value = permission_restriction.get(resource)
-                if restriction_value is False:
-                    raise PermissionDenied('You are not allowed to access the resources in the Requested Objects!')
-                else:
-                    if not set(resource_ids).issubset(set(restriction_value)):
-                        raise PermissionDenied('You are not allowed to access the resources in the Requested Objects!')
-                    else:
-                        return
+        if allowed_app_entity_records_identifiers == ALL:
+            return
 
-        # Check App config
-        if not set(resource_ids).issubset(set(user_role.app_config.get(resource, {}))):
-            raise PermissionDenied(f'You are not allowed to access the resources in the Requested Objects!')
+        if not set(app_entity_records_identifiers).issubset(set(allowed_app_entity_records_identifiers)):
+            raise PermissionDenied('You are not allowed to access the records in the requested entity!')
 
     @staticmethod
     @cache_user_service_results
-    def get_authorized_resources(user: User, role, resource: str, permission: str = None) -> list[int]:
+    def get_allowed_app_entity_records(
+            user: User,
+            role: ROLES,
+            app_entity_type: str,
+            model: models.Model.__class__,
+            permission: str = None
+    ) -> models.QuerySet:
         """
-        It gets the authorized resources for the group that has been requested.
+        Gets the app entity records that the user can access.
+
         Args:
-            user:           Logged in User
-            role:           ROLES as defined in the settings file.
-            resource:       The resource being accessed. For example, vehicle_ids
-            permission:     In case of specific permissions such as DodManager we can have
-                            permission restrictions through IDP. The value is the name of the permission
+            user:               The user performing the request
+            role:               The role that the user is acting as.
+            app_entity_type:    The app entity being accessed
+            model:              The Django model representing the entity being accessed
+            permission:         In case of specific permissions we can have permission restrictions
+                                    through IDP. The value is the name of the permission
 
         Returns:
-            Resource Ids
+            QuerySet of App Entity Records that the user can access
+        """
+
+        allowed_app_entity_records_identifiers = UserService._get_allowed_app_entity_records_identifiers(
+            user=user,
+            role=role,
+            app_entity_type=app_entity_type,
+            permission=permission
+        )
+
+        return UserService._get_records(
+            model=model, records_identifiers=allowed_app_entity_records_identifiers
+        )
+
+    @staticmethod
+    def _get_records(
+            model: models.Model.__class__,
+            records_identifiers: Union[list[Any], ALL]
+    ) -> models.QuerySet:
+        if records_identifiers == ALL:
+            return model.objects.all()
+        else:
+            model_pk_name = model._meta.pk.name
+            return model.objects.filter(**{model_pk_name: records_identifiers})
+
+    @staticmethod
+    @cache_user_service_results
+    def _get_allowed_app_entity_records_identifiers(
+            user: User,
+            role: ROLES,
+            app_entity_type: str,
+            permission: str = None
+    ) -> Union[list[Any], ALL]:
+        """
+        Gets the identifiers of the app entity records that the user can access.
+        If no restriction both on role and permission level, return '__all__'
+
+        Args:
+            user:               The user performing the request
+            role:               The role that the user is acting as.
+            app_entity_type:    The app entity being accessed
+            permission:         In case of specific permissions we can have permission restrictions
+                                    through IDP. The value is the name of the permission
+
+        Returns:
+            List of identifiers of App Entity Records that the user can access
         """
         assert ROLES.as_dict().get(role) is not None, f"Role does not exist: {role}"
 
         try:
             user_role = UserRole.objects.get(user=user, role=role)
 
+            # Permission restriction get precedence, if existing
             if permission:
                 permission_restrictions = user_role.permission_restrictions
                 if permission_restrictions and permission in permission_restrictions.keys():
                     permission_restriction = permission_restrictions.get(permission)
-                    return permission_restriction.get(resource) or []
+                    return permission_restriction.get(app_entity_type) or []
 
-            return user_role.app_config.get(resource, [])
+            # Verify if there is any restriction on the entity for the user
+            if app_entity_restriction := user_role.app_entities_restrictions.get(app_entity_type):
+                return app_entity_restriction
+
+            return ALL
+
         except UserRole.DoesNotExist:
             return []
 
@@ -154,7 +238,7 @@ class UserService:
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
     @classmethod
-    def update_user(cls, data: UserRecordDict):
+    def process_user(cls, data: UserRecordDict):
         """
         Extract tenants from the user record and call _update_user for each tenant.
         Remove tenant information from the payload of _update_user since it is not needed
@@ -211,14 +295,14 @@ class UserService:
                 update_record(
                     existing_user_role,
                     permission_restrictions=role_data.get('permission_restrictions'),
-                    app_config=role_data.get("app_config")
+                    app_entities_restrictions=role_data.get("app_entities_restrictions")
                 )
             else:
                 UserRole.objects.create(
                     user=user,
                     role=role,
                     permission_restrictions=role_data.get('permission_restrictions'),
-                    app_config=role_data.get("app_config")
+                    app_entities_restrictions=role_data.get("app_entities_restrictions")
                 )
 
         # Verify if any of the previous user roles is not being reported anymore

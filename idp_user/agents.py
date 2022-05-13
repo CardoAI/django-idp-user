@@ -51,7 +51,7 @@ user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
 @sync_to_async
 def update_user(user_record: UserRecord):
-    UserService.update_user(user_record.asdict())
+    UserService.process_user(user_record.asdict())
 
 
 @app.agent(user_updates)
