@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Type
 
 from django.conf import settings
 from django.core.cache import cache
@@ -35,7 +35,7 @@ class UserService:
             user: User,
             role: ROLES,
             app_entity_type: str,
-            model: models.Model.__class__,
+            model: Type[models.Model],
             app_entity_records_identifiers: Optional[list[Any]],
             permission: str = None
     ) -> models.QuerySet:
@@ -121,7 +121,7 @@ class UserService:
             user: User,
             role: ROLES,
             app_entity_type: str,
-            model: models.Model.__class__,
+            model: Type[models.Model],
             permission: str = None
     ) -> models.QuerySet:
         """
@@ -152,7 +152,7 @@ class UserService:
 
     @staticmethod
     def _get_records(
-            model: models.Model.__class__,
+            model: Type[models.Model],
             records_identifiers: Union[list[Any], ALL]
     ) -> models.QuerySet:
         if records_identifiers == ALL:
