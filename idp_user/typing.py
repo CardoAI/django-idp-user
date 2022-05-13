@@ -1,6 +1,9 @@
 from typing import TypedDict, Union, List, Any, Optional
 
 
+ALL = 'all'
+
+
 class JwtData(TypedDict):
     iat: int
     nbf: int
@@ -20,7 +23,7 @@ class UserFeaturesPermissions(TypedDict):
 
 
 class AppSpecificConfigs(TypedDict):
-    app_config: Any
+    app_entities_restrictions: Optional[dict[str, list]]
     permission_restrictions: dict[str, Union[bool, Any]]
 
 
@@ -56,7 +59,7 @@ class UserTenantData(TypedDict):
         "app_specific_configs": {
             "app_identifier": {
                 "Servicer": {
-                    "app_config": {"vehicle_ids": [1, 2]},
+                    "app_entities_restrictions": {"vehicle": [1, 2]},
                     "permission_restrictions": {
                         "viewDoD": {"vehicle_ids": [1]},
                         "synchronizeDoD": false
@@ -103,9 +106,9 @@ Example of a user record from kafka:
         "app_identifier": {
             "tenant": {
                 "Servicer": {
-                    "app_config": {"vehicle_ids": [1, 2]},
+                    "app_entities_restrictions": {"vehicle": [1, 2]},
                     "permission_restrictions": {
-                        "viewDoD": {"vehicle_ids": [1]},
+                        "viewDoD": {"vehicle": [1]},
                         "synchronizeDoD": false
                     }
                 }

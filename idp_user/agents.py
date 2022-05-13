@@ -19,7 +19,7 @@ app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
         "app_identifier": {
             "tenant": {
                 "Servicer": {
-                    "app_config": {"vehicle_ids": [1, 2]},
+                    "app_entities_restrictions": {"vehicle": [1, 2]},
                     "permission_restrictions": {
                         "synchronizeDoD": False
                     }
