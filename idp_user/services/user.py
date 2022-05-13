@@ -21,6 +21,13 @@ logger = logging.getLogger(__name__)
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
 IN_DEV = settings.APP_ENV == "development"
 ROLES = import_string(settings.IDP_USER_APP.get('ROLES'))
+APP_ENTITY_MODELS = settings.IDP_USER_APP.get('APP_ENTITY_MODELS')
+
+if APP_ENTITY_MODELS:
+    APP_ENTITY_MODELS = {
+        app_entity_type: import_string(model_path)
+        for app_entity_type, model_path in APP_ENTITY_MODELS.items()
+    }
 
 
 class UserService:
@@ -35,7 +42,6 @@ class UserService:
             user: User,
             role: ROLES,
             app_entity_type: str,
-            model: Type[models.Model],
             app_entity_records_identifiers: Optional[list[Any]],
             permission: str = None
     ) -> models.QuerySet:
@@ -47,7 +53,6 @@ class UserService:
             user:                           The user performing the request
             role:                           The role that the user is acting as.
             app_entity_type:                The app entity being accessed
-            model:                          The Django model representing the entity being accessed
             app_entity_records_identifiers: The identifiers of the records belonging to the specified app entity
             permission:                     In case of specific permissions we can have permission restrictions
                                                 through IDP. The value is the name of the permission
@@ -66,7 +71,7 @@ class UserService:
                 permission=permission
             )
             return UserService._get_records(
-                model=model,
+                app_entity_type=app_entity_type,
                 records_identifiers=app_entity_records_identifiers
             )
         else:
@@ -74,7 +79,6 @@ class UserService:
                 user=user,
                 role=role,
                 app_entity_type=app_entity_type,
-                model=model,
                 permission=permission
             )
 
@@ -121,7 +125,6 @@ class UserService:
             user: User,
             role: ROLES,
             app_entity_type: str,
-            model: Type[models.Model],
             permission: str = None
     ) -> models.QuerySet:
         """
@@ -131,7 +134,6 @@ class UserService:
             user:               The user performing the request
             role:               The role that the user is acting as.
             app_entity_type:    The app entity being accessed
-            model:              The Django model representing the entity being accessed
             permission:         In case of specific permissions we can have permission restrictions
                                     through IDP. The value is the name of the permission
 
@@ -147,19 +149,32 @@ class UserService:
         )
 
         return UserService._get_records(
-            model=model, records_identifiers=allowed_app_entity_records_identifiers
+            app_entity_type=app_entity_type,
+            records_identifiers=allowed_app_entity_records_identifiers
         )
 
     @staticmethod
+    def _get_app_entity_type_model(app_entity_type: str) -> Type[models.Model]:
+        try:
+            return APP_ENTITY_MODELS[app_entity_type]
+        except KeyError:
+            raise KeyError(
+                f"No model declared for app_entity_type={app_entity_type} "
+                f"in IDP_USER_APP['APP_ENTITY_MODELS']!"
+            )
+
+    @staticmethod
     def _get_records(
-            model: Type[models.Model],
+            app_entity_type: str,
             records_identifiers: Union[list[Any], ALL]
     ) -> models.QuerySet:
+        model = UserService._get_app_entity_type_model(app_entity_type)
+
         if records_identifiers == ALL:
             return model.objects.all()
         else:
             model_pk_name = model._meta.pk.name
-            return model.objects.filter(**{model_pk_name: records_identifiers})
+            return model.objects.filter(**{f"{model_pk_name}__in": records_identifiers})
 
     @staticmethod
     @cache_user_service_results
@@ -196,7 +211,10 @@ class UserService:
                     return permission_restriction.get(app_entity_type) or []
 
             # Verify if there is any restriction on the entity for the user
-            if app_entity_restriction := user_role.app_entities_restrictions.get(app_entity_type):
+            app_entities_restrictions = user_role.app_entities_restrictions
+            if app_entities_restrictions and (
+                    app_entity_restriction := app_entities_restrictions.get(app_entity_type)
+            ):
                 return app_entity_restriction
 
             return ALL

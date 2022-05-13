@@ -26,7 +26,10 @@ Quick start
         "OPA_VERSION": os.getenv("OPA_VERSION"),
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
-        "INJECT_HEADERS_IN_DEV": False
+        "INJECT_HEADERS_IN_DEV": False,
+        "APP_ENTITY_MODELS": {
+            "<entity_type>": "<path.to.entity_type.model>"
+        }
     }
 
     REST_FRAMEWORK = {
@@ -85,3 +88,8 @@ Settings Reference
   * If True, the authentication headers will be injected in the response in development mode.
   * Unless you want to setup an IDP server locally for testing purposes,
     leave this as ``False`` when developing.
+
+* ``APP_ENTITY_MODELS``
+
+  * This dict links the AppEntityTypes declared on the IDP for this app to their actual models,
+    so that they can be used for authorization purposes.
