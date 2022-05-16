@@ -27,9 +27,13 @@ Quick start
         "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
         "INJECT_HEADERS_IN_DEV": False,
-        "APP_ENTITY_MODELS": {
-            "<entity_type>": "<path.to.entity_type.model>"
-        }
+        "APP_ENTITIES": {
+            "<entity_type>": {
+                "model_path": "<path.to.entity_type.model>",
+                "identifier_attr": "<field_name>",
+                "label_attr": "<field_name>",
+            }
+        },
     }
 
     REST_FRAMEWORK = {
@@ -48,6 +52,12 @@ Quick start
         ),
         'SERVE_AUTHENTICATION': ()
     }
+
+    # Kafka Related
+    KAFKA_ARN = "<aws_kafka_arn>"
+    KAFKA_AWS_ACCESS_KEY_ID = "<access_key_id>"
+    KAFKA_AWS_SECRET_ACCESS_KEY = "<secret_access_key_id>"
+    AWS_S3_REGION_NAME = "<region_name>"
 
 3. Run ``python manage.py migrate`` to create the models.
 
@@ -89,7 +99,8 @@ Settings Reference
   * Unless you want to setup an IDP server locally for testing purposes,
     leave this as ``False`` when developing.
 
-* ``APP_ENTITY_MODELS``
+* ``APP_ENTITIES``
 
   * This dict links the AppEntityTypes declared on the IDP for this app to their actual models,
-    so that they can be used for authorization purposes.
+    so that they can be used for authorization purposes. In the value dicts, the attributes that will be
+    used as the identifier and label are declared as well.

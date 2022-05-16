@@ -6,28 +6,17 @@ from typing import Any, Optional, Union, Type
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction, models
-from django.utils.module_loading import import_string
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import UserRole
+from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
-from ..typing import UserTenantData, UserRecordDict, ALL
+from ..typing import UserTenantData, UserRecordDict, ALL, AppEntityTypeConfig
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
-
-APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
-IN_DEV = settings.APP_ENV == "development"
-ROLES = import_string(settings.IDP_USER_APP.get('ROLES'))
-APP_ENTITY_MODELS = settings.IDP_USER_APP.get('APP_ENTITY_MODELS')
-
-if APP_ENTITY_MODELS:
-    APP_ENTITY_MODELS = {
-        app_entity_type: import_string(model_path)
-        for app_entity_type, model_path in APP_ENTITY_MODELS.items()
-    }
 
 
 class UserService:
@@ -106,6 +95,8 @@ class UserService:
             PermissionDenied: In case the requested records are not allowed
         """
 
+        assert app_entity_type in APP_ENTITIES.keys(), f"Unknown app entity: {app_entity_type}!"
+
         allowed_app_entity_records_identifiers = UserService._get_allowed_app_entity_records_identifiers(
             user=user,
             role=role,
@@ -141,6 +132,8 @@ class UserService:
             QuerySet of App Entity Records that the user can access
         """
 
+        assert app_entity_type in APP_ENTITIES.keys(), f"Unknown app entity: {app_entity_type}!"
+
         allowed_app_entity_records_identifiers = UserService._get_allowed_app_entity_records_identifiers(
             user=user,
             role=role,
@@ -154,13 +147,13 @@ class UserService:
         )
 
     @staticmethod
-    def _get_app_entity_type_model(app_entity_type: str) -> Type[models.Model]:
+    def _get_app_entity_type_configs(app_entity_type: str) -> AppEntityTypeConfig:
         try:
-            return APP_ENTITY_MODELS[app_entity_type]
+            return APP_ENTITIES[app_entity_type]
         except KeyError:
             raise KeyError(
-                f"No model declared for app_entity_type={app_entity_type} "
-                f"in IDP_USER_APP['APP_ENTITY_MODELS']!"
+                f"No config declared for app_entity_type={app_entity_type} "
+                f"in IDP_USER_APP['APP_ENTITIES']!"
             )
 
     @staticmethod
@@ -168,13 +161,14 @@ class UserService:
             app_entity_type: str,
             records_identifiers: Union[list[Any], ALL]
     ) -> models.QuerySet:
-        model = UserService._get_app_entity_type_model(app_entity_type)
+        app_entity_type_configs = UserService._get_app_entity_type_configs(app_entity_type)
+        model = app_entity_type_configs['model']
 
         if records_identifiers == ALL:
             return model.objects.all()
         else:
-            model_pk_name = model._meta.pk.name
-            return model.objects.filter(**{f"{model_pk_name}__in": records_identifiers})
+            model_identifier_attr = app_entity_type_configs['identifier_attr']
+            return model.objects.filter(**{f"{model_identifier_attr}__in": records_identifiers})
 
     @staticmethod
     @cache_user_service_results

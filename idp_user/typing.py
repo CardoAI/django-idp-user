@@ -1,5 +1,6 @@
-from typing import TypedDict, Union, List, Any, Optional
+from typing import TypedDict, Union, List, Any, Optional, Type
 
+from django.db import models
 
 ALL = 'all'
 
@@ -117,3 +118,17 @@ Example of a user record from kafka:
     }
 }
 """
+
+
+class AppEntityTypeConfig(TypedDict):
+    model: Union[str, Type[models.Model]]
+    identifier_attr: str
+    label_attr: str
+
+
+class AppEntityRecordEventDict(TypedDict):
+    app_identifier: str
+    app_entity_type: str
+    record_identifier: Any
+    deleted: bool
+    label: Optional[str]
