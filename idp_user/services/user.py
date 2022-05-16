@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 from copy import deepcopy
+from datetime import datetime
 from typing import Any, Optional, Union, Type
 
 from django.conf import settings
@@ -11,9 +12,10 @@ from rest_framework.request import Request
 
 from ..models import User
 from ..models.user_role import UserRole
-from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER
+from ..producer import Producer
+from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER, APP_ENTITY_RECORD_EVENT_TOPIC
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
-from ..typing import UserTenantData, UserRecordDict, ALL, AppEntityTypeConfig
+from ..typing import UserTenantData, UserRecordDict, ALL, AppEntityTypeConfig, AppEntityRecordEventDict
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
@@ -326,3 +328,60 @@ class UserService:
     @staticmethod
     def _get_reported_user_app_configs(data):
         return data.get('app_specific_configs', {}).get(APP_IDENTIFIER, {})
+
+    @staticmethod
+    def send_app_entity_record_event_to_kafka(app_entity_type: str, app_entity_record: Any, deleted=False):
+        app_entity_type_config = APP_ENTITIES[app_entity_type]
+
+        event: AppEntityRecordEventDict = {
+            'app_identifier': APP_IDENTIFIER,
+            'app_entity_type': app_entity_type,
+            'record_identifier': getattr(app_entity_record, app_entity_type_config['identifier_attr']),
+            'label': getattr(app_entity_record, app_entity_type_config['label_attr']),
+            'deleted': deleted
+        }
+
+        logger.info(f"Sending update {event}...")
+
+        Producer().send_message(
+            topic=APP_ENTITY_RECORD_EVENT_TOPIC,
+            key=str(datetime.now()),
+            data=event
+        )
+
+    @staticmethod
+    def _get_app_entity_type_from_model(model: Type[models.Model]):
+        for app_entity_type, config in APP_ENTITIES.items():  # type: str, AppEntityTypeConfig
+            if config['model'] == model:
+                return app_entity_type
+
+        raise Exception(f"App entity type for model {model} not found!")
+
+    @staticmethod
+    def process_app_entity_record_post_save(sender: Type[models.Model], instance, **kwargs):
+        """
+        Whenever an app entity record is saved (created/updated),
+        send a message to Kafka to notify the IDP.
+
+        kwargs are required for signal receivers.
+        """
+
+        UserService.send_app_entity_record_event_to_kafka(
+            app_entity_type=UserService._get_app_entity_type_from_model(sender),
+            app_entity_record=instance
+        )
+
+    @staticmethod
+    def process_app_entity_record_post_delete(sender: Type[models.Model], instance, **kwargs):
+        """
+        Whenever an app entity record is deleted,
+        send a message to Kafka to notify the IDP.
+
+        kwargs are required for signal receivers.
+        """
+
+        UserService.send_app_entity_record_event_to_kafka(
+            app_entity_type=UserService._get_app_entity_type_from_model(sender),
+            app_entity_record=instance,
+            deleted=True
+        )
