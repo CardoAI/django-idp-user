@@ -1,10 +1,11 @@
 import logging
 import os
-from typing import Optional, Callable, Literal, List
+from typing import Optional, Callable, Literal, List, Dict
 
 import jwt
 import requests
 from django.conf import settings
+from django.contrib.auth.backends import ModelBackend
 from rest_framework import authentication
 from rest_framework.request import Request
 
@@ -15,9 +16,10 @@ from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 logger = logging.getLogger(__name__)
 
 APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
-
 # Allow header injection only if in Development Environment, for testing purposes
 INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.APP_ENV == 'development'
+IDP_GET_USER_URL = settings.IDP_USER_APP["IDP_GET_USER_URL"]
+IDP_LOGIN_URL = settings.IDP_USER_APP["IDP_LOGIN_URL"]
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
@@ -149,3 +151,31 @@ class AuthenticationBackend(authentication.TokenAuthentication):
                 return self._skip_auth_headers_and_opa(request)
         except AuthenticationError:
             return None, None
+
+
+class IDPAuthBackend(ModelBackend):
+
+    def authenticate(self, request, **kwargs):
+        access_token = self.fetch_token(request)
+        if not access_token:
+            return None
+        response = requests.get(IDP_GET_USER_URL, headers={
+            "Authorization": f"Bearer {access_token}"})
+        username = response.json()["username"]
+        try:
+            # Assuming that username is unique identifier for the user in IDP
+            return User.objects.filter(username=username).first()
+        except User.DoesNotExist:
+            pass
+
+    def fetch_token(self, request) -> Optional[str]:
+        res = requests.post(IDP_LOGIN_URL, json=self.generate_login_payload(request))
+        if res.status_code == 200:
+            return res.json()['access']
+        return None
+
+    @staticmethod
+    def generate_login_payload(request) -> Dict[str, str]:
+        """Generate the payload needed to make request to the IDP /login path"""
+        return {"username": request.POST.get("username"),
+                "password": request.POST.get("password")}
