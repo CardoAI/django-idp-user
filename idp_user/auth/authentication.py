@@ -15,11 +15,11 @@ from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 
 logger = logging.getLogger(__name__)
 
-APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
+APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
+BASE_URL = settings.IDP_USER_APP.get("IDP_URL")
+
 # Allow header injection only if in Development Environment, for testing purposes
 INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.APP_ENV == 'development'
-IDP_GET_USER_URL = settings.IDP_USER_APP.get("IDP_GET_USER_URL")
-IDP_LOGIN_URL = settings.IDP_USER_APP.get("IDP_LOGIN_URL")
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
@@ -100,7 +100,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
     @staticmethod
     def _inject_headers_through_idp(request: Request):
         response = requests.get(
-            url=f"{os.getenv('IDP_URL')}/api/validate/?app={APP_IDENTIFIER}",
+            url=f"{BASE_URL}/api/validate/?app={APP_IDENTIFIER}",
             headers={
                 "Authorization": request.headers.get('Authorization'),
             }
@@ -159,7 +159,7 @@ class IDPAuthBackend(ModelBackend):
         access_token = self.fetch_token(request)
         if not access_token:
             return None
-        response = requests.get(IDP_GET_USER_URL, headers={
+        response = requests.get(f"{BASE_URL}/api/users/me/", headers={
             "Authorization": f"Bearer {access_token}"})
         username = response.json()["username"]
         try:
@@ -169,7 +169,7 @@ class IDPAuthBackend(ModelBackend):
             pass
 
     def fetch_token(self, request) -> Optional[str]:
-        res = requests.post(IDP_LOGIN_URL, json=self.generate_login_payload(request))
+        res = requests.post(f"{BASE_URL}/api/login/", json=self.generate_login_payload(request))
         if res.status_code == 200:
             return res.json()['access']
         return None

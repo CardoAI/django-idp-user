@@ -25,8 +25,6 @@ Quick start
         "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
         "OPA_VERSION": os.getenv("OPA_VERSION"),
         "IDP_URL": os.getenv("IDP_URL"),
-        "IDP_GET_USER_URL": os.getenv("IDP_GET_USER_URL"),
-        "IDP_LOGIN_URL": os.getenv("IDP_LOGIN_URL")
         "USE_REDIS_CACHE": True,
         "INJECT_HEADERS_IN_DEV": False
     }
