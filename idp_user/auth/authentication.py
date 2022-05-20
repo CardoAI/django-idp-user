@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
 # Allow header injection only if in Development Environment, for testing purposes
 INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.APP_ENV == 'development'
-IDP_GET_USER_URL = settings.IDP_USER_APP["IDP_GET_USER_URL"]
-IDP_LOGIN_URL = settings.IDP_USER_APP["IDP_LOGIN_URL"]
+IDP_GET_USER_URL = settings.IDP_USER_APP.get("IDP_GET_USER_URL")
+IDP_LOGIN_URL = settings.IDP_USER_APP.get("IDP_LOGIN_URL")
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
