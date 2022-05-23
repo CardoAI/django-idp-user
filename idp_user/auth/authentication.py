@@ -1,10 +1,11 @@
 import logging
 import os
-from typing import Optional, Callable, Literal, List
+from typing import Optional, Callable, Literal, List, Dict
 
 import jwt
 import requests
 from django.conf import settings
+from django.contrib.auth.backends import ModelBackend
 from rest_framework import authentication
 from rest_framework.request import Request
 
@@ -14,7 +15,8 @@ from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 
 logger = logging.getLogger(__name__)
 
-APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
+APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
+BASE_URL = settings.IDP_USER_APP.get("IDP_URL")
 
 # Allow header injection only if in Development Environment, for testing purposes
 INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.APP_ENV == 'development'
@@ -98,7 +100,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
     @staticmethod
     def _inject_headers_through_idp(request: Request):
         response = requests.get(
-            url=f"{os.getenv('IDP_URL')}/api/validate/?app={APP_IDENTIFIER}",
+            url=f"{BASE_URL}/api/validate/?app={APP_IDENTIFIER}",
             headers={
                 "Authorization": request.headers.get('Authorization'),
             }
@@ -149,3 +151,31 @@ class AuthenticationBackend(authentication.TokenAuthentication):
                 return self._skip_auth_headers_and_opa(request)
         except AuthenticationError:
             return None, None
+
+
+class IDPAuthBackend(ModelBackend):
+
+    def authenticate(self, request, **kwargs):
+        access_token = self.fetch_token(request)
+        if not access_token:
+            return None
+        response = requests.get(f"{BASE_URL}/api/users/me/", headers={
+            "Authorization": f"Bearer {access_token}"})
+        username = response.json()["username"]
+        try:
+            # Assuming that username is unique identifier for the user in IDP
+            return User.objects.filter(username=username).first()
+        except User.DoesNotExist:
+            pass
+
+    def fetch_token(self, request) -> Optional[str]:
+        res = requests.post(f"{BASE_URL}/api/login/", json=self.generate_login_payload(request))
+        if res.status_code == 200:
+            return res.json()['access']
+        return None
+
+    @staticmethod
+    def generate_login_payload(request) -> Dict[str, str]:
+        """Generate the payload needed to make request to the IDP /login path"""
+        return {"username": request.POST.get("username"),
+                "password": request.POST.get("password")}
