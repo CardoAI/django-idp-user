@@ -113,7 +113,6 @@ class UserService:
             raise PermissionDenied('You are not allowed to access the records in the requested entity!')
 
     @staticmethod
-    @cache_user_service_results
     def get_allowed_app_entity_records(
             user: User,
             role: ROLES,
