@@ -14,7 +14,8 @@ class Producer(metaclass=Singleton):
     def __init__(self):
         self.__connection = KafkaProducer(
             bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
-            value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8')
+            value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
+            api_version=(1, 0, 0)
         )
 
     def send_message(self, topic: str, key: str, data: dict):
