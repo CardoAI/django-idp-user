@@ -11,4 +11,4 @@ if APP_ENTITIES:
         config_dict['model'] = import_string(config_dict['model'])
 
 
-APP_ENTITY_RECORD_EVENT_TOPIC = f"{settings.APP_ENV}_app_entity_record_events"
+APP_ENTITY_RECORD_EVENT_TOPIC = f"app_entity_record_events"
