@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from kafka import KafkaProducer
@@ -12,7 +14,7 @@ class Producer(metaclass=Singleton):
     def __init__(self):
         self.__connection = KafkaProducer(
             bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
-            value_serializer=DjangoJSONEncoder
+            value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8')
         )
 
     def send_message(self, topic: str, key: str, data: dict):
