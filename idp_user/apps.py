@@ -8,7 +8,7 @@ class IDPUserConfig(AppConfig):
 
     def ready(self):
         # If Kafka is not configured, do not register signals
-        is_kafka_configured = getattr(settings, "KAFKA_ARN") or getattr(settings, "KAFKA_BROKER")
+        is_kafka_configured = getattr(settings, "KAFKA_ARN", None) or getattr(settings, "KAFKA_BROKER", None)
         if not is_kafka_configured:
             return
 
