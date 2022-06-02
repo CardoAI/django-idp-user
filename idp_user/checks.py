@@ -56,10 +56,10 @@ def check_idp_user_settings(*args, **kwargs):
     try:
         idp_user_settings = settings.IDP_USER_APP
 
-        for attr in ["APP_IDENTIFIER", "FAUST_APP_PATH", "OPA_DOMAIN", "OPA_VERSION"]:
+        for attr in ["APP_IDENTIFIER", "FAUST_APP_PATH"]:
             verify_idp_user_app_attr_exists(attr, error=True)
 
-        for attr in ["ROLES", "IDP_URL"]:
+        for attr in ["ROLES"]:
             verify_idp_user_app_attr_exists(attr, error=False)
 
     except AttributeError:

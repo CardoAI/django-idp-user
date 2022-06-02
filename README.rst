@@ -22,10 +22,8 @@ Quick start
         "APP_IDENTIFIER": "str",
         "ROLES": "path.to.roles_choices",
         "FAUST_APP_PATH": "backend.kafka_consumer.app",
-        "OPA_DOMAIN": os.getenv("OPA_DOMAIN"),
-        "OPA_VERSION": os.getenv("OPA_VERSION"),
-        "IDP_URL": os.getenv("IDP_URL"),
         "USE_REDIS_CACHE": True,
+        "IDP_URL": "idp_url",  # Optional
         "INJECT_HEADERS_IN_DEV": False,
         "APP_ENTITIES": {
             "<entity_type>": {
@@ -40,9 +38,6 @@ Quick start
         'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema' / 'idp_user.schema_extensions.AutoSchemaWithRole',
         'DEFAULT_AUTHENTICATION_CLASSES': (
             'idp_user.auth.AuthenticationBackend',
-        ),
-        'DEFAULT_PERMISSION_CLASSES': (
-            'idp_user.auth.OpaCheckPermission',
         ),
     }
 
@@ -66,7 +61,7 @@ Settings Reference
 
 * ``APP_IDENTIFIER``
 
-  * The app identifier used in the OPA policy.
+  * The app identifier, as defined in the IDP.
 
 * ``ROLES``
 
@@ -76,17 +71,9 @@ Settings Reference
 
   * The path to the Faust app.
 
-* ``OPA_DOMAIN``
-
-  * The OPA domain.
-
-* ``OPA_VERSION``
-
-  * The OPA version.
-
 * ``IDP_URL``
 
-  * The IDP URL.
+  * The URL of the IDP, used for local development, or when using the IDP as an Authentication Backend.
 
 * ``USE_REDIS_CACHE``
 

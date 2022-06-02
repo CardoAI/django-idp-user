@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Optional, Callable, Literal, List, Dict
 
 import jwt
@@ -16,10 +15,10 @@ from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 logger = logging.getLogger(__name__)
 
 APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
-BASE_URL = settings.IDP_USER_APP.get("IDP_URL")
+IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 
-# Allow header injection only if in Development Environment, for testing purposes
-INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.APP_ENV == 'development'
+# Allow header injection only in Development, for testing purposes
+INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.DEBUG is True
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
@@ -39,7 +38,6 @@ class AuthenticationBackend(authentication.TokenAuthentication):
     @classmethod
     def _ingress_headers_required(cls, request: Request):
         cls._header_required(request, 'X-USER-ID', 'User ID', lambda x: x.isdigit())
-        cls._header_required(request, 'X-ROLES-FUNCTIONALITIES', 'roles functionalities')
 
     @classmethod
     def _header_required(
@@ -100,7 +98,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
     @staticmethod
     def _inject_headers_through_idp(request: Request):
         response = requests.get(
-            url=f"{BASE_URL}/api/validate/?app={APP_IDENTIFIER}",
+            url=f"{IDP_URL}/api/validate/?app={APP_IDENTIFIER}",
             headers={
                 "Authorization": request.headers.get('Authorization'),
             }
@@ -112,7 +110,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             request.META['X-ROLES-FUNCTIONALITIES'] = response.headers.get('X-ROLES-FUNCTIONALITIES')
             return request
 
-    def _skip_auth_headers_and_opa(self, request: Request):
+    def _skip_auth_headers(self, request: Request):
         try:
             # Require access token
             self._access_token_required(request)
@@ -148,7 +146,7 @@ class AuthenticationBackend(authentication.TokenAuthentication):
                     return None, None
                 return self.authenticate(request)
             else:
-                return self._skip_auth_headers_and_opa(request)
+                return self._skip_auth_headers(request)
         except AuthenticationError:
             return None, None
 
@@ -159,7 +157,7 @@ class IDPAuthBackend(ModelBackend):
         access_token = self.fetch_token(request)
         if not access_token:
             return None
-        response = requests.get(f"{BASE_URL}/api/users/me/", headers={
+        response = requests.get(f"{IDP_URL}/api/users/me/", headers={
             "Authorization": f"Bearer {access_token}"})
         username = response.json()["username"]
         try:
@@ -169,7 +167,7 @@ class IDPAuthBackend(ModelBackend):
             pass
 
     def fetch_token(self, request) -> Optional[str]:
-        res = requests.post(f"{BASE_URL}/api/login/", json=self.generate_login_payload(request))
+        res = requests.post(f"{IDP_URL}/api/login/", json=self.generate_login_payload(request))
         if res.status_code == 200:
             return res.json()['access']
         return None
