@@ -27,7 +27,7 @@ Quick start
         "INJECT_HEADERS_IN_DEV": False,
         "APP_ENTITIES": {
             "<entity_type>": {
-                "model_path": "<path.to.entity_type.model>",
+                "model": "<path.to.entity_type.model>",
                 "identifier_attr": "<field_name>",
                 "label_attr": "<field_name>",
             }
