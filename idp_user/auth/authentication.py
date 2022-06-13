@@ -18,7 +18,7 @@ APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 
 # Allow header injection only in Development, for testing purposes
-INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False) and settings.DEBUG is True
+INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False)
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
@@ -107,7 +107,6 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             # Headers dict cannot be modified, insert the headers as META,
             # that will be used by the overriden method _get_request_header
             request.META['X-USER-ID'] = response.headers.get('X-USER-ID')
-            request.META['X-ROLES-FUNCTIONALITIES'] = response.headers.get('X-ROLES-FUNCTIONALITIES')
             return request
 
     def _skip_auth_headers(self, request: Request):
@@ -140,13 +139,16 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             return self._get_user(jwt_data['user_id']), self
 
         except MissingHeaderError:
-            if INJECT_HEADERS:
-                request = self._inject_headers_through_idp(request)
-                if not request:
-                    return None, None
-                return self.authenticate(request)
+            if settings.DEBUG is True:
+                if INJECT_HEADERS:
+                    request = self._inject_headers_through_idp(request)
+                    if not request:
+                        return None, None
+                    return self.authenticate(request)
+                else:
+                    return self._skip_auth_headers(request)
             else:
-                return self._skip_auth_headers(request)
+                return None, None
         except AuthenticationError:
             return None, None
 
@@ -175,5 +177,7 @@ class IDPAuthBackend(ModelBackend):
     @staticmethod
     def generate_login_payload(request) -> Dict[str, str]:
         """Generate the payload needed to make request to the IDP /login path"""
-        return {"username": request.POST.get("username"),
-                "password": request.POST.get("password")}
+        return {
+            "username": request.POST.get("username"),
+            "password": request.POST.get("password")
+        }
