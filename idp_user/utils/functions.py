@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
-from idp_user.settings import APP_IDENTIFIER, IN_DEV
+from idp_user.settings import APP_IDENTIFIER, IN_DEV, AWS_S3_REGION_NAME
 
 
 def keep_keys(dictionary, keys):
@@ -65,7 +65,7 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
                 settings.KAFKA_AWS_SECRET_ACCESS_KEY
             ).decode("utf-8"),
         )
-        resource = session.client("kafka", region_name=settings.AWS_S3_REGION_NAME)
+        resource = session.client("kafka", region_name=AWS_S3_REGION_NAME)
         response = resource.get_bootstrap_brokers(
             ClusterArn=base64.b64decode(kafka_arn).decode("utf-8")
         )

@@ -12,3 +12,5 @@ if APP_ENTITIES:
 
 
 APP_ENTITY_RECORD_EVENT_TOPIC = f"app_entity_record_events"
+
+AWS_S3_REGION_NAME = getattr(settings, 'AWS_S3_REGION_NAME', None) or 'eu-central-1'
