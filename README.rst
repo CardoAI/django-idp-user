@@ -49,9 +49,9 @@ Quick start
     }
 
     # Kafka Related
-    KAFKA_ARN = "<aws_kafka_arn>"
+    KAFKA_ARN = "<aws_kafka_arn>"  # Encoded in base64
     KAFKA_AWS_ACCESS_KEY_ID = "<access_key_id>"
-    KAFKA_AWS_SECRET_ACCESS_KEY = "<secret_access_key_id>"
+    KAFKA_AWS_SECRET_ACCESS_KEY = "<secret_access_key_id>"  # Encoded in base64
     AWS_S3_REGION_NAME = "<region_name>"
 
 3. Run ``python manage.py migrate`` to create the models.
