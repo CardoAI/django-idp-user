@@ -198,12 +198,13 @@ class UserService:
         try:
             user_role = UserRole.objects.get(user=user, role=role)
 
-            # Permission restriction get precedence, if existing
+            # Permission restriction get precedence, if existing, for the given app_entity
             if permission:
                 permission_restrictions = user_role.permission_restrictions
                 if permission_restrictions and permission in permission_restrictions.keys():
                     permission_restriction = permission_restrictions.get(permission)
-                    return permission_restriction.get(app_entity_type) or []
+                    if permission_app_entity_restriction := permission_restriction.get(app_entity_type):
+                        return permission_app_entity_restriction
 
             # Verify if there is any restriction on the entity for the user
             app_entities_restrictions = user_role.app_entities_restrictions
