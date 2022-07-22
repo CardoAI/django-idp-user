@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.module_loading import import_string
 
+CONSUMER_APP_ENV = settings.IDP_USER_APP.get('CONSUMER_APP_ENV') or settings.APP_ENV
 APP_IDENTIFIER = settings.IDP_USER_APP['APP_IDENTIFIER']
 IN_DEV = settings.APP_ENV == "development"
 ROLES = import_string(settings.IDP_USER_APP.get('ROLES'))

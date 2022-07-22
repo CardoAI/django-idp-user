@@ -32,6 +32,7 @@ Quick start
                 "label_attr": "<field_name>",
             }
         },
+        "CONSUMER_APP_ENV": (Optional) "development"/"staging"/"production",
     }
 
     REST_FRAMEWORK = {
@@ -91,3 +92,8 @@ Settings Reference
   * This dict links the AppEntityTypes declared on the IDP for this app to their actual models,
     so that they can be used for authorization purposes. In the value dicts, the attributes that will be
     used as the identifier and label are declared as well.
+
+* ``CONSUMER_APP_ENV``
+
+  * The environment of the Faust Kafka Consumer app.
+  * If not set, the value of ``APP_ENV`` will be used.

@@ -5,6 +5,7 @@ from django.utils.module_loading import import_string
 from faust import StreamT
 
 from .services import UserService
+from .settings import CONSUMER_APP_ENV
 
 app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
 
@@ -44,7 +45,7 @@ class UserRecord(faust.Record):
     app_specific_configs: dict = None
 
 
-USER_UPDATES_TOPIC_NAME = f"{settings.APP_ENV}_user_updates"
+USER_UPDATES_TOPIC_NAME = f"{CONSUMER_APP_ENV}_user_updates"
 
 user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
