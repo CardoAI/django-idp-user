@@ -7,6 +7,7 @@ from typing import Any, Optional, Union, Type
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction, models
+from django.db.models import Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
@@ -385,3 +386,27 @@ class UserService:
             app_entity_record=instance,
             deleted=True
         )
+
+    @staticmethod
+    def get_users_with_access_to_app_entity_record(
+            app_entity_type: str,
+            record_identifier: Any,
+            roles: list[str]
+    ) -> QuerySet:
+        """
+        Get users that have access to the required app entity record in the given roles.
+        """
+
+        assert app_entity_type in APP_ENTITIES.keys(), f"Unknown app entity: {app_entity_type}!"
+
+        roles = UserRole.objects.filter(
+            Q(user__is_active=True) &
+            Q(role__in=roles) &
+            (
+                    Q(app_entities_restrictions__isnull=True) |
+                    Q(**{f"app_entities_restrictions__{app_entity_type}__isnull": True}) |
+                    Q(**{f"app_entities_restrictions__{app_entity_type}__contains": record_identifier})
+            )
+        )
+
+        return User.objects.filter(pk__in=list(roles.values_list('user__pk', flat=True)))
