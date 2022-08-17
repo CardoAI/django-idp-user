@@ -24,7 +24,6 @@ Quick start
         "FAUST_APP_PATH": "backend.kafka_consumer.app",
         "USE_REDIS_CACHE": True,
         "IDP_URL": "idp_url",  # Optional
-        "INJECT_HEADERS_IN_DEV": False,
         "APP_ENTITIES": {
             "<entity_type>": {
                 "model": "<path.to.entity_type.model>",
@@ -80,12 +79,6 @@ Settings Reference
 
   * If True, the cache will be used
   * When developing locally, you can leave this as ``False``.
-
-* ``INJECT_HEADERS_IN_DEV``
-
-  * If True, the authentication headers will be injected in the response in development mode.
-  * Unless you want to setup an IDP server locally for testing purposes,
-    leave this as ``False`` when developing.
 
 * ``APP_ENTITIES``
 

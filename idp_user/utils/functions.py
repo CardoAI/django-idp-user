@@ -4,7 +4,7 @@ import json
 import boto3
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 
 from idp_user.settings import APP_IDENTIFIER, IN_DEV, AWS_S3_REGION_NAME
 
@@ -18,8 +18,6 @@ def get_or_none(records, *args, **kwargs):
         return records.get(*args, **kwargs)
     except ObjectDoesNotExist:
         return None
-    except MultipleObjectsReturned:
-        return records.filter(*args, **kwargs)[0]
 
 
 def update_record(record, save=True, **data):

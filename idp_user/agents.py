@@ -11,7 +11,6 @@ app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
 
 """
 {
-    "idp_user_id": 12,
     "username": "",
     "first_name": "",
     "last_name": "",
@@ -33,16 +32,15 @@ app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
 
 
 class UserRecord(faust.Record):
-    idp_user_id: int
-    first_name: str = None
-    last_name: str = None
-    username: str = None
-    email: str = None
-    is_active: bool = None
-    is_staff: bool = None
-    is_superuser: bool = None
-    date_joined: str = None
-    app_specific_configs: dict = None
+    first_name: str
+    last_name: str
+    username: str
+    email: str
+    is_active: bool
+    is_staff: bool
+    is_superuser: bool
+    date_joined: str
+    app_specific_configs: dict
 
 
 USER_UPDATES_TOPIC_NAME = f"{CONSUMER_APP_ENV}_user_updates"

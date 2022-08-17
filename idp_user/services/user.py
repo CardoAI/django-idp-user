@@ -17,6 +17,7 @@ from ..producer import Producer
 from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER, APP_ENTITY_RECORD_EVENT_TOPIC
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
 from ..typing import UserTenantData, UserRecordDict, ALL, AppEntityTypeConfig, AppEntityRecordEventDict
+from ..utils.exceptions import UnsupportedAppEntityType
 from ..utils.functions import get_or_none, keep_keys, update_record, cache_user_service_results
 
 logger = logging.getLogger(__name__)
@@ -198,32 +199,30 @@ class UserService:
 
         try:
             user_role = UserRole.objects.get(user=user, role=role)
-
-            # Permission restriction get precedence, if existing, for the given app_entity
-            if permission:
-                permission_restrictions = user_role.permission_restrictions
-                if permission_restrictions and permission in permission_restrictions.keys():
-                    permission_restriction = permission_restrictions.get(permission)
-                    if permission_app_entity_restriction := permission_restriction.get(app_entity_type):
-                        return permission_app_entity_restriction
-
-            # Verify if there is any restriction on the entity for the user
-            app_entities_restrictions = user_role.app_entities_restrictions
-            if app_entities_restrictions and (
-                    app_entity_restriction := app_entities_restrictions.get(app_entity_type)
-            ):
-                return app_entity_restriction
-
-            return ALL
-
         except UserRole.DoesNotExist:
             return []
 
+        # Permission restriction get precedence, if existing, for the given app_entity
+        if permission:
+            permission_restrictions = user_role.permission_restrictions
+            if permission_restrictions and permission in permission_restrictions.keys():
+                permission_restriction = permission_restrictions.get(permission)
+                if permission_app_entity_restriction := permission_restriction.get(app_entity_type):
+                    return permission_app_entity_restriction
+
+        # Verify if there is any restriction on the entity for the user
+        app_entities_restrictions = user_role.app_entities_restrictions
+        if app_entities_restrictions and (
+                app_entity_restriction := app_entities_restrictions.get(app_entity_type)
+        ):
+            return app_entity_restriction
+
+        return ALL
+
     @staticmethod
     def _create_or_update_user(data: UserTenantData) -> User:
-        user = get_or_none(User.objects, idp_user_id=data.get("idp_user_id"))
+        user = get_or_none(User.objects, username=data.get("username"))
         user_data = keep_keys(data, [
-            "idp_user_id",
             "username",
             "email",
             "first_name",
@@ -356,7 +355,7 @@ class UserService:
             if config['model'] == model:
                 return app_entity_type
 
-        raise Exception(f"App entity type for model {model} not found!")
+        raise UnsupportedAppEntityType(model)
 
     @staticmethod
     def process_app_entity_record_post_save(sender: Type[models.Model], instance, **kwargs):

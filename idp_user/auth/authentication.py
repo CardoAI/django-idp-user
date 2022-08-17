@@ -1,32 +1,25 @@
 import logging
-from typing import Optional, Callable, Literal, List, Dict
+from typing import Optional, Callable, Literal, List
 
 import jwt
 import requests
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
-from rest_framework import authentication
+from rest_framework import authentication, status
 from rest_framework.request import Request
 
 from idp_user.models import User
 from idp_user.typing import JwtData
 from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
+from idp_user.utils.functions import get_or_none
 
 logger = logging.getLogger(__name__)
 
 APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 
-# Allow header injection only in Development, for testing purposes
-INJECT_HEADERS = settings.IDP_USER_APP.get("INJECT_HEADERS_IN_DEV", False)
-
 
 class AuthenticationBackend(authentication.TokenAuthentication):
-
-    @classmethod
-    def _auth_required(cls, request: Request):
-        cls._access_token_required(request)
-        cls._ingress_headers_required(request)
 
     @classmethod
     def _access_token_required(cls, request: Request):
@@ -34,10 +27,6 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             cls._header_required(request, 'Authorization', 'token', lambda x: x.startswith('Bearer '))
         except MissingHeaderError:
             raise AuthenticationError("Missing Token.")
-
-    @classmethod
-    def _ingress_headers_required(cls, request: Request):
-        cls._header_required(request, 'X-USER-ID', 'User ID', lambda x: x.isdigit())
 
     @classmethod
     def _header_required(
@@ -54,11 +43,6 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             raise MissingHeaderError(header_human_name)
 
     @classmethod
-    def _verify_user_id(cls, request: Request, jwt_data: JwtData):
-        if not int(cls._get_request_header(request, 'X-USER-ID')) == jwt_data['user_id']:
-            raise AuthenticationError('Invalid token.')
-
-    @classmethod
     def _get_access_token(cls, request: Request) -> str:
         auth_header = cls._get_request_header(request, 'Authorization')
         return auth_header.replace('Bearer ', '')
@@ -73,12 +57,12 @@ class AuthenticationBackend(authentication.TokenAuthentication):
         return data
 
     @classmethod
-    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal['user_id']]):
+    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal['username']]):
         for claim in claims:
             cls._verify_jwt_claim(jwt_data, claim)
 
     @classmethod
-    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal['user_id']):
+    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal['username']):
         try:
             jwt_data[claim]
         except KeyError:
@@ -89,95 +73,41 @@ class AuthenticationBackend(authentication.TokenAuthentication):
         return request.headers.get(header) or request.META.get(header)
 
     @staticmethod
-    def _get_user(user_id: int) -> User:
-        try:
-            return User.objects.get(idp_user_id=user_id)
-        except User.DoesNotExist:
-            pass
-
-    @staticmethod
-    def _inject_headers_through_idp(request: Request):
-        response = requests.get(
-            url=f"{IDP_URL}/api/validate/?app={APP_IDENTIFIER}",
-            headers={
-                "Authorization": request.headers.get('Authorization'),
-            }
-        )
-        if response.ok:
-            # Headers dict cannot be modified, insert the headers as META,
-            # that will be used by the overriden method _get_request_header
-            request.META['X-USER-ID'] = response.headers.get('X-USER-ID')
-            return request
-
-    def _skip_auth_headers(self, request: Request):
-        try:
-            # Require access token
-            self._access_token_required(request)
-            # Get jwt payload from access token
-            jwt_data = self._get_jwt_payload(request)
-            # Check if required user claims are provided
-            self._verify_jwt_claims(jwt_data, ['user_id'])
-
-            return self._get_user(jwt_data['user_id']), self
-
-        except AuthenticationError:
-            return None, None
+    def _get_user(username: str) -> Optional[User]:
+        return get_or_none(User.objects, username=username)
 
     def authenticate(self, request: Request):
         try:
-            # Check if ingress headers are provided
-            self._ingress_headers_required(request)
-
             self._access_token_required(request)
-
             jwt_data = self._get_jwt_payload(request)
-            # Check if required user claims are provided
-            self._verify_jwt_claims(jwt_data, ['user_id'])
-            # Check if user id added by ingress in the request is the same as the user id in the token
-            self._verify_user_id(request, jwt_data)
-            # Set the user in the request for later access
-            return self._get_user(jwt_data['user_id']), self
-
-        except MissingHeaderError:
-            if settings.DEBUG is True:
-                if INJECT_HEADERS:
-                    request = self._inject_headers_through_idp(request)
-                    if not request:
-                        return None, None
-                    return self.authenticate(request)
-                else:
-                    return self._skip_auth_headers(request)
-            else:
-                return None, None
-        except AuthenticationError:
+            self._verify_jwt_claims(jwt_data, ['username'])
+            return self._get_user(jwt_data['username']), self
+        except (AuthenticationError, MissingHeaderError):
             return None, None
 
 
 class IDPAuthBackend(ModelBackend):
 
     def authenticate(self, request, **kwargs):
-        access_token = self.fetch_token(request)
+        access_token = self._fetch_token(request)
         if not access_token:
             return None
-        response = requests.get(f"{IDP_URL}/api/users/me/", headers={
-            "Authorization": f"Bearer {access_token}"})
+
+        response = requests.get(
+            url=f"{IDP_URL}/api/users/me/",
+            headers={
+                "Authorization": f"Bearer {access_token}"
+            })
         username = response.json()["username"]
-        try:
-            # Assuming that username is unique identifier for the user in IDP
-            return User.objects.filter(username=username).first()
-        except User.DoesNotExist:
-            pass
+        return get_or_none(User.objects, username=username)
 
-    def fetch_token(self, request) -> Optional[str]:
-        res = requests.post(f"{IDP_URL}/api/login/", json=self.generate_login_payload(request))
-        if res.status_code == 200:
-            return res.json()['access']
-        return None
+    def _fetch_token(self, request) -> Optional[str]:
+        response = requests.post(
+            url=f"{IDP_URL}/api/login/",
+            json={
+                "username": request.POST.get("username"),
+                "password": request.POST.get("password")
+            })
 
-    @staticmethod
-    def generate_login_payload(request) -> Dict[str, str]:
-        """Generate the payload needed to make request to the IDP /login path"""
-        return {
-            "username": request.POST.get("username"),
-            "password": request.POST.get("password")
-        }
+        if response.status_code == status.HTTP_200_OK:
+            return response.json()['access']

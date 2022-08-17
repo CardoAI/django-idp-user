@@ -33,7 +33,6 @@ UserAppSpecificConfigs = dict[Role, AppSpecificConfigs]
 
 
 class UserTenantData(TypedDict):
-    idp_user_id: int
     first_name: str
     last_name: str
     username: str
@@ -48,7 +47,6 @@ class UserTenantData(TypedDict):
 """
 "data": [
    {
-        "idp_user_id": 12,
         "first_name": "str",
         "last_name": "str",
         "username": "str",
@@ -80,15 +78,14 @@ UserRecordAppSpecificConfigs = dict[AppIdentifier, dict[TenantIdentifier, AppSpe
 
 
 class UserRecordDict(TypedDict):
-    idp_user_id: int
-    first_name: Optional[str]
-    last_name: Optional[str]
-    username: Optional[str]
-    email: Optional[str]
-    is_active: Optional[bool]
-    is_staff: Optional[bool]
-    is_superuser: Optional[bool]
-    date_joined: Optional[str]
+    first_name: str
+    last_name: str
+    username: str
+    email: str
+    is_active: bool
+    is_staff: bool
+    is_superuser: bool
+    date_joined: str
     app_specific_configs: UserRecordAppSpecificConfigs
 
 
