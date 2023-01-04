@@ -53,8 +53,18 @@ def update_user(user_record: UserRecord):
     UserService.process_user(user_record.asdict())
 
 
+@sync_to_async
+def verify_if_user_exists_and_delete_roles(user_record: UserRecord):
+    UserService.verify_if_user_exists_and_delete_roles(user_record.asdict())
+
+
 @app.agent(user_updates)
 async def update_user_stream_processor(user_records: StreamT[UserRecord]):
     async for user_record in user_records:
         if user_record.app_specific_configs.get(settings.IDP_USER_APP['APP_IDENTIFIER']):
             await update_user(user_record)
+        else:
+            # Having arrived here means that the user does not have access in the current app
+            # Verify however if the user already exists in the database of any tenant
+            # If this is the case, delete his/her roles
+            await verify_if_user_exists_and_delete_roles(user_record)

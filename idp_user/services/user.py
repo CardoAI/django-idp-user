@@ -286,6 +286,20 @@ class UserService:
             finally:
                 post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
+    @classmethod
+    def verify_if_user_exists_and_delete_roles(cls, data: UserRecordDict):
+        """
+        Verify if the user exists in any of the tenants and delete all the roles associated with it.
+        """
+        for tenant in settings.DATABASES.keys():
+            pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+
+            if user := get_or_none(User, username=data['username']):
+                logger.info(f"Deleting roles for user {data['username']} in tenant {tenant}")
+                UserRole.objects.filter(user=user).delete()  # type: ignore
+
+            post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+
     @staticmethod
     def _update_user(data: UserTenantData):
         """
