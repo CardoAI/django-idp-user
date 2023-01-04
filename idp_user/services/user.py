@@ -294,7 +294,7 @@ class UserService:
         for tenant in settings.DATABASES.keys():
             pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
-            if user := get_or_none(User, username=data['username']):
+            if user := get_or_none(User.objects, username=data['username']):
                 logger.info(f"Deleting roles for user {data['username']} in tenant {tenant}")
                 UserRole.objects.filter(user=user).delete()  # type: ignore
 
