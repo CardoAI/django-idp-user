@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from ..models import User
 from ..models.user_role import UserRole
 from ..producer import Producer
-from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER, APP_ENTITY_RECORD_EVENT_TOPIC
+from ..settings import ROLES, APP_ENTITIES, IN_DEV, APP_IDENTIFIER, APP_ENTITY_RECORD_EVENT_TOPIC, TENANTS
 from ..signals import pre_update_idp_user, post_update_idp_user, post_create_idp_user
 from ..typing import UserTenantData, UserRecordDict, ALL, AppEntityTypeConfig, AppEntityRecordEventDict
 from ..utils.exceptions import UnsupportedAppEntityType
@@ -269,7 +269,7 @@ class UserService:
         tenants = reported_user_app_configs.keys()
 
         for tenant in tenants:
-            if tenant not in settings.DATABASES.keys():
+            if tenant not in TENANTS:
                 logger.info(f"Tenant {tenant} not present, skipping.")
                 continue
 
@@ -291,7 +291,7 @@ class UserService:
         """
         Verify if the user exists in any of the tenants and delete all the roles associated with it.
         """
-        for tenant in settings.DATABASES.keys():
+        for tenant in TENANTS:
             pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
             if user := get_or_none(User.objects, username=data['username']):
