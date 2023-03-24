@@ -406,7 +406,7 @@ class UserService:
             "deleted": deleted,
         }
 
-        logger.info(f"Sending update {event}...")
+        print(f"Sending update {event}...")
 
         async_send_message = producer.send_message
 
@@ -414,11 +414,15 @@ class UserService:
 
         key = str(datetime.now())
 
-        sync_send_message(
-            topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
-        )
-
-        print("Message sent")
+        try:
+            sync_send_message(
+                topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
+            )
+            print("Message sent")
+        except Exception as e:
+            print(f"Error sending message to Kafka: {e}")
+        finally:
+            await producer.close()
 
     @staticmethod
     def _get_app_entity_type_from_model(model: Type[models.Model]):

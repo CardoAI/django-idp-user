@@ -47,3 +47,6 @@ class AioKafkaProducer:
             key=key.encode('utf-8'),
             value=data
         )
+
+    async def close(self):
+        await self._producer.stop()
