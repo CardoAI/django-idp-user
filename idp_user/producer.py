@@ -29,27 +29,21 @@ class Producer(metaclass=Singleton):
 
 
 class AioKafkaProducer:
-    _instance = None
+    _producer = None
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
-    async def __aenter__(self):
-        self._connection = AIOKafkaProducer(
-            bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
-            value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
-            api_version=str((2, 6, 2)),
-        )
-        await self._connection.start()
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        await self._connection.stop()
+    async def get_producer(self):
+        if self._producer is None:
+            self._producer = AIOKafkaProducer(
+                bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
+                value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
+                api_version=str((2, 6, 2)),
+            )
+            await self._producer.start()
+        return self._producer
 
     async def send_message(self, topic: str, key: str, data: dict):
-        await self._connection.send_and_wait(
+        producer = await self.get_producer()
+        await producer.send_and_wait(
             topic=f"{settings.APP_ENV}_{topic}",
             key=key.encode('utf-8'),
             value=data
