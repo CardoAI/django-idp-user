@@ -46,6 +46,9 @@ from rest_framework.request import Request
 logger = logging.getLogger(__name__)
 
 
+producer = AioKafkaProducer()
+
+
 class UserService:
     # Service Methods Used by Django Application
     @staticmethod
@@ -389,7 +392,7 @@ class UserService:
 
     @staticmethod
     def send_app_entity_record_event_to_kafka(
-        app_entity_type: str, app_entity_record: Any, deleted=False
+            app_entity_type: str, app_entity_record: Any, deleted=False
     ):
         app_entity_type_config = APP_ENTITIES[app_entity_type]
 
@@ -405,9 +408,16 @@ class UserService:
 
         logger.info(f"Sending update {event}...")
 
-        async_to_sync(AioKafkaProducer().send_message)(
-            topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=str(datetime.now()), data=event
+        async_send_message = producer.send_message
+
+        sync_send_message = async_to_sync(async_send_message)
+
+        key = str(datetime.now())
+
+        sync_send_message(
+            topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
         )
+
         print("Message sent")
 
     @staticmethod
