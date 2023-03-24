@@ -29,30 +29,28 @@ class Producer(metaclass=Singleton):
 
 
 class AioKafkaProducer:
-    def __init__(self, loop, bootstrap_servers, topic):
-        self.loop = loop
-        self.bootstrap_servers = bootstrap_servers
-        self.topic = topic
-        self.producer = None
+    _instance = None
 
-    async def async_init(self):
-        print("Initializing producer")
-        self.producer = AIOKafkaProducer(
-            loop=self.loop,
-            bootstrap_servers=self.bootstrap_servers,
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    async def __aenter__(self):
+        self._connection = AIOKafkaProducer(
+            bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
+            value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
+            api_version=str((2, 6, 2)),
         )
-        await self.producer.start()
-        print("Producer initialized")
+        await self._connection.start()
+        return self
 
-    async def send(self, message):
-        await self.producer.send_and_wait(self.topic, message)
-
-    async def close(self):
-        await self.producer.stop()
+    async def __aexit__(self, exc_type, exc, tb):
+        await self._connection.stop()
 
     async def send_message(self, topic: str, key: str, data: dict):
-        await self.async_init()
-        await self.producer.send_and_wait(
-            topic=f"{settings.APP_ENV}_{topic}", key=key.encode("utf-8"), value=data
+        await self._connection.send_and_wait(
+            topic=f"{settings.APP_ENV}_{topic}",
+            key=key.encode('utf-8'),
+            value=data
         )
-        print("Message sent")
