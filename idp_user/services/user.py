@@ -422,7 +422,9 @@ class UserService:
         except Exception as e:
             print(f"Error sending message to Kafka: {e}")
         finally:
-            await producer.close()
+            async_close = producer.close
+            sync_close = async_to_sync(async_close)
+            sync_close()
 
     @staticmethod
     def _get_app_entity_type_from_model(model: Type[models.Model]):
