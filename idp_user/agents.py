@@ -49,11 +49,15 @@ user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
 
 async def update_user(user_record: UserRecord):
-    UserService.process_user(user_record.asdict())
+    await sync_to_async(
+        UserService.process_user
+    )(user_record.asdict())
 
 
 async def verify_if_user_exists_and_delete_roles(user_record: UserRecord):
-    UserService.verify_if_user_exists_and_delete_roles(user_record.asdict())
+    await sync_to_async(
+        UserService.verify_if_user_exists_and_delete_roles
+    )(user_record.asdict())
 
 
 @app.agent(user_updates)
