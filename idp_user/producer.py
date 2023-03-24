@@ -36,7 +36,6 @@ class AioKafkaProducer:
             self._producer = AIOKafkaProducer(
                 bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
                 value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
-                api_version=str((2, 6, 2)),
             )
             await self._producer.start()
         return self._producer
