@@ -48,13 +48,11 @@ USER_UPDATES_TOPIC_NAME = f"{CONSUMER_APP_ENV}_user_updates"
 user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
 
-@sync_to_async
-def update_user(user_record: UserRecord):
+async def update_user(user_record: UserRecord):
     UserService.process_user(user_record.asdict())
 
 
-@sync_to_async
-def verify_if_user_exists_and_delete_roles(user_record: UserRecord):
+async def verify_if_user_exists_and_delete_roles(user_record: UserRecord):
     UserService.verify_if_user_exists_and_delete_roles(user_record.asdict())
 
 
