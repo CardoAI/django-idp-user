@@ -1,9 +1,8 @@
 import json
-
-from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from kafka import KafkaProducer
-
+from aiokafka import AIOKafkaProducer
+from django.conf import settings
 from idp_user.utils.classes import Singleton
 from idp_user.utils.functions import get_kafka_bootstrap_servers
 
@@ -27,3 +26,33 @@ class Producer(metaclass=Singleton):
         # Sometimes messages do not get sent.
         # Flushing after each message seems to solve the issue
         self.__connection.flush()
+
+
+class AioKafkaProducer:
+    def __init__(self, loop, bootstrap_servers, topic):
+        self.loop = loop
+        self.bootstrap_servers = bootstrap_servers
+        self.topic = topic
+        self.producer = None
+
+    async def async_init(self):
+        print("Initializing producer")
+        self.producer = AIOKafkaProducer(
+            loop=self.loop,
+            bootstrap_servers=self.bootstrap_servers,
+        )
+        await self.producer.start()
+        print("Producer initialized")
+
+    async def send(self, message):
+        await self.producer.send_and_wait(self.topic, message)
+
+    async def close(self):
+        await self.producer.stop()
+
+    async def send_message(self, topic: str, key: str, data: dict):
+        await self.async_init()
+        await self.producer.send_and_wait(
+            topic=f"{settings.APP_ENV}_{topic}", key=key.encode("utf-8"), value=data
+        )
+        print("Message sent")

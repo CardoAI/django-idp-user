@@ -1,5 +1,6 @@
 import base64
 import json
+from urllib.parse import parse_qs
 
 import boto3
 from django.conf import settings
@@ -40,10 +41,9 @@ def cache_user_service_results(function):
         result = cache.get(cache_key)
         if result:
             return json.loads(result)
-        else:
-            result = function(user=user, *args, **kwargs)
-            cache.set(cache_key, json.dumps(result))
-            return result
+        result = function(user=user, *args, **kwargs)
+        cache.set(cache_key, json.dumps(result))
+        return result
 
     if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
         return function
@@ -72,9 +72,24 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
         ), "Something went wrong while receiving kafka servers!"
 
         bootstrap_servers = response.get("BootstrapBrokerString").split(",")
-        if not include_uri_scheme:
-            return bootstrap_servers
-        return [f"kafka://{host}" for host in bootstrap_servers]
+        return (
+            [f"kafka://{host}" for host in bootstrap_servers]
+            if include_uri_scheme
+            else bootstrap_servers
+        )
     else:
         kafka_url = settings.KAFKA_BROKER
         return f"kafka://{kafka_url}" if include_uri_scheme else kafka_url
+
+
+def parse_query_params_from_scope(scope):
+    """
+    Parse query params from scope
+
+    Parameters:
+        scope (dict): scope from consumer
+
+    Returns:
+        dict: query params
+    """
+    return parse_qs(scope["query_string"].decode("utf-8"))
