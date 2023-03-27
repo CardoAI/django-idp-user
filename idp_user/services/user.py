@@ -323,7 +323,8 @@ class UserService:
 
             try:
                 with transaction.atomic(using=tenant):
-                    UserService._update_user(user_record_for_tenant)  # type: ignore
+                    async_update_user = async_to_sync(cls._update_user)
+                    async_update_user(user_record_for_tenant)
             finally:
                 post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
 
@@ -406,7 +407,10 @@ class UserService:
             "deleted": deleted,
         }
 
-        print(f"Sending update {event}...")
+        print("Sending update")
+        record_identifier = getattr(app_entity_record, app_entity_type_config["identifier_attr"])
+        print(f"App Identifier: {APP_IDENTIFIER} | "
+              f"\t  App Entity Type: {app_entity_type} | \t Record identifier: {record_identifier}")
 
         async_send_message = producer.send_message
 
@@ -418,7 +422,7 @@ class UserService:
             sync_send_message(
                 topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
             )
-            print("Message sent")
+            print(f"Message sent to Kafka topic {APP_ENTITY_RECORD_EVENT_TOPIC}")
         except Exception as e:
             print(f"Error sending message to Kafka: {e}")
 
