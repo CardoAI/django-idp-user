@@ -46,7 +46,7 @@ class AioKafkaProducer:
         print("From AioKafkaProducer.send_message")
         print(f"Sending message to topic: {topic}")
         await producer.send_and_wait(
-            topic=f"{settings.APP_ENV}_{topic}",
+            topic=topic,
             key=key.encode('utf-8'),
             value=data
         )
