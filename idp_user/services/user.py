@@ -404,11 +404,6 @@ class UserService:
             "deleted": deleted,
         }
 
-        print("Sending update")
-        record_identifier = getattr(app_entity_record, app_entity_type_config["identifier_attr"])
-        print(f"App Identifier: {APP_IDENTIFIER} | "
-              f"\t  App Entity Type: {app_entity_type} | \t Record identifier: {record_identifier}")
-
         producer = AioKafkaProducer()
         async_send_message = producer.send_message
 
@@ -420,10 +415,10 @@ class UserService:
             sync_send_message(
                 topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
             )
-            print("From UserService.send_app_entity_record_event_to_kafka")
-            print(f"Message sent to Kafka topic {APP_ENTITY_RECORD_EVENT_TOPIC}")
         except Exception as e:
-            print(f"Error sending message to Kafka: {e}")
+            logger.error(
+                f"Error while sending message to Kafka: {e}. Message: {event}"
+            )
 
     @staticmethod
     def _get_app_entity_type_from_model(model: Type[models.Model]):
