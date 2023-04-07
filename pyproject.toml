@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.version]
-path = "django-idp-user/__init__.py"
+path = "idp_user/__init__.py"
 
 [project]
 name = "django_idp_user"
@@ -32,7 +32,7 @@ dependencies = [
 readme = "README.rst"
 requires-python = ">=3.9"
 license = "MIT"
-dynamic = ["dependencies", "version"]
+dynamic = ["version"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -41,7 +41,6 @@ dependencies = {file = ["requirements.txt"]}
 [project.optional-dependencies]
 test = [
     "pytest==7.2.0",
-    "pytest-django==4.5.2",
     "black>=22.10.0",
     "isort==5.11.3",
     "ruff==0.0.259",
@@ -52,12 +51,11 @@ test = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --no-migrations --reuse-db --capture=no --log-cli-level=INFO --cov-report=term-missing" # --cov-fail-under=90
+addopts = "-ra -q --strict-markers --capture=no --log-cli-level=INFO"
 testpaths = [
     "tests",
 ]
 python_files = "tests.py test_*.py *_tests.py"
-DJANGO_SETTINGS_MODULE = "conf.settings.test"
 filterwarnings = [
     'ignore::DeprecationWarning:kombu.*:',
 ]
@@ -70,18 +68,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "import*",
 ]
-
-
-[tool.coverage.run]
-omit = ["*/migrations/*", "*/tests/*", "*/conf/*", "codebase/manage.py", "*__init__.py", "codebase/documents/utils/*",
-    "codebase/documents/tasks.py", "codebase/documents/management/commands/*", "codebase/documents/admin.py",
-    "codebase/documents/urls.py", "codebase/documents/services/user.py", "codebase/documents/models/abstract.py",
-    "codebase/documents/signals.py", "codebase/documents/consumers/file.py", "codebase/documents/models/query.py",
-    "codebase/documents/models/mixins.py", "codebase/documents/models/iter.py", "codebase/documents/models/manager.py",
-    "codebase/documents/models/helpers.py", "codebase/documents/services/base_service.py"
-]
-source = ["codebase"]
-
 
 [tool.black]
 line-length = 88
@@ -98,9 +84,9 @@ exclude = '''
   | deplyoment
   | .git
   | scripts
-  | codebase/media
-  | codebase/static
-  | codebase/idp_user
+  | media
+  | static
+  | .venv
 )/
 '''
 

@@ -20,7 +20,7 @@ class IDPUserConfig(AppConfig):
         for (
             _app_entity_type,
             config,
-        ) in APP_ENTITIES.items():  # type: str, AppEntityTypeConfig
+        ) in APP_ENTITIES.items():
             model = config["model"]
             post_save.connect(
                 receiver=UserService.process_app_entity_record_post_save,

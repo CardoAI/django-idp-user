@@ -422,7 +422,7 @@ class UserService:
         for (
             app_entity_type,
             config,
-        ) in APP_ENTITIES.items():  # type: str, AppEntityTypeConfig
+        ) in APP_ENTITIES.items():
             if config["model"] == model:
                 return app_entity_type
 
@@ -430,7 +430,8 @@ class UserService:
 
     @staticmethod
     def process_app_entity_record_post_save(
-        sender: Type[models.Model], instance, **kwargs
+        sender: Type[models.Model],
+        instance,
     ):
         """
         Whenever an app entity record is saved (created/updated),
@@ -445,9 +446,7 @@ class UserService:
         )
 
     @staticmethod
-    def process_app_entity_record_post_delete(
-        sender: Type[models.Model], instance, **kwargs
-    ):
+    def process_app_entity_record_post_delete(sender: Type[models.Model], instance):
         """
         Whenever an app entity record is deleted,
         send a message to Kafka to notify the IDP.
