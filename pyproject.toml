@@ -1,0 +1,171 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.version]
+path = "django-idp-user/__init__.py"
+
+[project]
+name = "django_idp_user"
+description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
+authors = [
+    {name = "Mahmoud Al-Rawy"},
+    {name = "Euron Metaliaj"},
+    {name = "Klajdi Çaushi"},
+    {name = "Aleksandër Nasto"},
+    {name = "Andi Çuku"},
+    {name = "Andi Çuku"},
+    {name = "Klement Omeri"},
+]
+dependencies = [
+    "django>=4.0",
+    "djangorestframework~=3.14.0",
+    "pyjwt==2.6.0",
+    "requests~=2.28.2",
+    "drf_spectacular",
+    "faust-streaming==0.10.10",
+    "boto3~=1.26.98"
+]
+readme = "README.rst"
+requires-python = ">=3.9"
+license = "MIT"
+dynamic = ["dependencies", "version"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+
+[project.optional-dependencies]
+test = [
+    "pytest==7.2.0",
+    "pytest-django==4.5.2",
+    "black>=22.10.0",
+    "isort==5.11.3",
+    "ruff==0.0.259",
+    "pytest-cov==4.0.0",
+    "Faker==15.3.4"
+]
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --no-migrations --reuse-db --capture=no --log-cli-level=INFO --cov-report=term-missing" # --cov-fail-under=90
+testpaths = [
+    "tests",
+]
+python_files = "tests.py test_*.py *_tests.py"
+DJANGO_SETTINGS_MODULE = "conf.settings.test"
+filterwarnings = [
+    'ignore::DeprecationWarning:kombu.*:',
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "import*",
+]
+
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/tests/*", "*/conf/*", "codebase/manage.py", "*__init__.py", "codebase/documents/utils/*",
+    "codebase/documents/tasks.py", "codebase/documents/management/commands/*", "codebase/documents/admin.py",
+    "codebase/documents/urls.py", "codebase/documents/services/user.py", "codebase/documents/models/abstract.py",
+    "codebase/documents/signals.py", "codebase/documents/consumers/file.py", "codebase/documents/models/query.py",
+    "codebase/documents/models/mixins.py", "codebase/documents/models/iter.py", "codebase/documents/models/manager.py",
+    "codebase/documents/models/helpers.py", "codebase/documents/services/base_service.py"
+]
+source = ["codebase"]
+
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+  # The following are specific to Black, you probably don't want those.
+  | blib2to3
+  | tests/data/
+  | profiling
+  | migrations
+  | docs
+  | deplyoment
+  | .git
+  | scripts
+  | codebase/media
+  | codebase/static
+  | codebase/idp_user
+)/
+'''
+
+[tool.isort]
+profile = "black"
+skip = "migrations"
+
+[tool.ruff]
+line-length = 88
+extend-exclude = [
+    "*/migrations/*",
+    "codebase/media/*",
+    "codebase/static/*",
+    "codbase/documents/tests/test_data/*",
+    "*/conf/*",
+    "codebase/manage.py",
+    "*__init__.py",
+    "idp_user"
+]
+
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    # "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "F405", # name may be undefined, or defined from star imports
+]
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "migrations",
+    "venv",
+]
+per-file-ignores = {}
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.11.
+target-version = "py311"
+
+[tool.ruff.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10

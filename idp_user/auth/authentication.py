@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Callable, Literal, List
+from typing import Callable, List, Literal, Optional
 
 import jwt
 import requests
@@ -20,21 +20,22 @@ IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 
 
 class AuthenticationBackend(authentication.TokenAuthentication):
-
     @classmethod
     def _access_token_required(cls, request: Request):
         try:
-            cls._header_required(request, 'Authorization', 'token', lambda x: x.startswith('Bearer '))
-        except MissingHeaderError:
-            raise AuthenticationError("Missing Token.")
+            cls._header_required(
+                request, "Authorization", "token", lambda x: x.startswith("Bearer ")
+            )
+        except MissingHeaderError as e:
+            raise AuthenticationError("Missing Token.") from e
 
     @classmethod
     def _header_required(
-            cls,
-            request: Request,
-            header: str,
-            header_human_name: str,
-            validation_func: Optional[Callable] = None,
+        cls,
+        request: Request,
+        header: str,
+        header_human_name: str,
+        validation_func: Optional[Callable] = None,
     ):
         header = cls._get_request_header(request, header)
         if not header:
@@ -44,29 +45,33 @@ class AuthenticationBackend(authentication.TokenAuthentication):
 
     @classmethod
     def _get_access_token(cls, request: Request) -> str:
-        auth_header = cls._get_request_header(request, 'Authorization')
-        return auth_header.replace('Bearer ', '')
+        auth_header = cls._get_request_header(request, "Authorization")
+        return auth_header.replace("Bearer ", "")
 
     @classmethod
     def _get_jwt_payload(cls, request: Request) -> JwtData:
         try:
             # Signature already verified from ingress before
-            data = jwt.decode(cls._get_access_token(request), algorithms=['HS256'], options={'verify_signature': False})
-        except Exception:
-            raise AuthenticationError('Invalid token.')
+            data = jwt.decode(
+                cls._get_access_token(request),
+                algorithms=["HS256"],
+                options={"verify_signature": False},
+            )
+        except Exception as e:
+            raise AuthenticationError("Invalid token.") from e
         return data
 
     @classmethod
-    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal['username']]):
+    def _verify_jwt_claims(cls, jwt_data: JwtData, claims: List[Literal["username"]]):
         for claim in claims:
             cls._verify_jwt_claim(jwt_data, claim)
 
     @classmethod
-    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal['username']):
+    def _verify_jwt_claim(cls, jwt_data: JwtData, claim: Literal["username"]):
         try:
             jwt_data[claim]
-        except KeyError:
-            raise AuthenticationError('Invalid token.')
+        except KeyError as e:
+            raise AuthenticationError("Invalid token.") from e
 
     @staticmethod
     def _get_request_header(request: Request, header: str) -> str:
@@ -80,14 +85,13 @@ class AuthenticationBackend(authentication.TokenAuthentication):
         try:
             self._access_token_required(request)
             jwt_data = self._get_jwt_payload(request)
-            self._verify_jwt_claims(jwt_data, ['username'])
-            return self._get_user(jwt_data['username']), self
+            self._verify_jwt_claims(jwt_data, ["username"])
+            return self._get_user(jwt_data["username"]), self
         except (AuthenticationError, MissingHeaderError):
             return None, None
 
 
 class IDPAuthBackend(ModelBackend):
-
     def authenticate(self, request, **kwargs):
         access_token = self._fetch_token(request)
         if not access_token:
@@ -95,19 +99,20 @@ class IDPAuthBackend(ModelBackend):
 
         response = requests.get(
             url=f"{IDP_URL}/api/users/me/",
-            headers={
-                "Authorization": f"Bearer {access_token}"
-            })
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
         username = response.json()["username"]
         return get_or_none(User.objects, username=username)
 
-    def _fetch_token(self, request) -> Optional[str]:
+    @staticmethod
+    def _fetch_token(request) -> Optional[str]:
         response = requests.post(
             url=f"{IDP_URL}/api/login/",
             json={
                 "username": request.POST.get("username"),
-                "password": request.POST.get("password")
-            })
+                "password": request.POST.get("password"),
+            },
+        )
 
         if response.status_code == status.HTTP_200_OK:
-            return response.json()['access']
+            return response.json()["access"]

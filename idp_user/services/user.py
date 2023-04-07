@@ -9,6 +9,9 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.request import Request
+
 from idp_user.models import User
 from idp_user.models.user_role import UserRole
 from idp_user.producer import AioKafkaProducer
@@ -37,11 +40,9 @@ from idp_user.utils.functions import (
     cache_user_service_results,
     get_or_none,
     keep_keys,
-    update_record,
     parse_query_params_from_scope,
+    update_record,
 )
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.request import Request
 
 logger = logging.getLogger(__name__)
 
@@ -390,7 +391,7 @@ class UserService:
 
     @staticmethod
     def send_app_entity_record_event_to_kafka(
-            app_entity_type: str, app_entity_record: Any, deleted=False
+        app_entity_type: str, app_entity_record: Any, deleted=False
     ):
         app_entity_type_config = APP_ENTITIES[app_entity_type]
 
@@ -412,13 +413,9 @@ class UserService:
         key = str(datetime.now())
 
         try:
-            sync_send_message(
-                topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event
-            )
+            sync_send_message(topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=key, data=event)
         except Exception as e:
-            logger.error(
-                f"Error while sending message to Kafka: {e}. Message: {event}"
-            )
+            logger.error(f"Error while sending message to Kafka: {e}. Message: {event}")
 
     @staticmethod
     def _get_app_entity_type_from_model(model: Type[models.Model]):

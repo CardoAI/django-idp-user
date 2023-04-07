@@ -7,7 +7,7 @@ from faust import StreamT
 from .services import UserService
 from .settings import CONSUMER_APP_ENV
 
-app = import_string(settings.IDP_USER_APP['FAUST_APP_PATH'])
+app = import_string(settings.IDP_USER_APP["FAUST_APP_PATH"])
 
 """
 {
@@ -49,21 +49,21 @@ user_updates = app.topic(USER_UPDATES_TOPIC_NAME, value_type=UserRecord)
 
 
 async def update_user(user_record: UserRecord):
-    await sync_to_async(
-        UserService.process_user
-    )(user_record.asdict())
+    await sync_to_async(UserService.process_user)(user_record.asdict())
 
 
 async def verify_if_user_exists_and_delete_roles(user_record: UserRecord):
-    await sync_to_async(
-        UserService.verify_if_user_exists_and_delete_roles
-    )(user_record.asdict())
+    await sync_to_async(UserService.verify_if_user_exists_and_delete_roles)(
+        user_record.asdict()
+    )
 
 
 @app.agent(user_updates)
 async def update_user_stream_processor(user_records: StreamT[UserRecord]):
     async for user_record in user_records:
-        if user_record.app_specific_configs.get(settings.IDP_USER_APP['APP_IDENTIFIER']):
+        if user_record.app_specific_configs.get(
+            settings.IDP_USER_APP["APP_IDENTIFIER"]
+        ):
             await update_user(user_record)
         else:
             # Having arrived here means that the user does not have access in the current app

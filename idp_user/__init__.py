@@ -1,4 +1,6 @@
-from . import checks
-from . import signals
+from . import checks, signals
 
-default_app_config = 'idp_user.apps.IDPUserConfig'
+default_app_config = "idp_user.apps.IDPUserConfig"
+
+
+__version__ = "2.1.16"

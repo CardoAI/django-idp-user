@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 
-from idp_user.settings import APP_IDENTIFIER, IN_DEV, AWS_S3_REGION_NAME
+from idp_user.settings import APP_IDENTIFIER, AWS_S3_REGION_NAME, IN_DEV
 
 
 def keep_keys(dictionary, keys):
@@ -41,11 +41,11 @@ def cache_user_service_results(function):
         result = cache.get(cache_key)
         if result:
             return json.loads(result)
-        result = function(user=user, *args, **kwargs)
+        result = function(user=user, *args, **kwargs)  # noqa
         cache.set(cache_key, json.dumps(result))
         return result
 
-    if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
+    if IN_DEV or not settings.IDP_USER_APP.get("USE_REDIS_CACHE", False):
         return function
 
     return wrapper
@@ -68,7 +68,7 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
             ClusterArn=base64.b64decode(kafka_arn).decode("utf-8")
         )
         assert (
-                "BootstrapBrokerString" in response.keys()
+            "BootstrapBrokerString" in response.keys()
         ), "Something went wrong while receiving kafka servers!"
 
         bootstrap_servers = response.get("BootstrapBrokerString").split(",")
