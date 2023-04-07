@@ -432,6 +432,7 @@ class UserService:
     def process_app_entity_record_post_save(
         sender: Type[models.Model],
         instance,
+        **kwargs,  # noqa
     ):
         """
         Whenever an app entity record is saved (created/updated),
@@ -446,7 +447,9 @@ class UserService:
         )
 
     @staticmethod
-    def process_app_entity_record_post_delete(sender: Type[models.Model], instance):
+    def process_app_entity_record_post_delete(
+        sender: Type[models.Model], instance, **kwargs  # noqa
+    ):
         """
         Whenever an app entity record is deleted,
         send a message to Kafka to notify the IDP.
