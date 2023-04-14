@@ -1,1 +1,1 @@
-from .authentication import AuthenticationBackend, IDPAuthBackend
+from .authentication import AuthenticationBackend, IDPAuthBackend, IDPChannelsAuthenticationMiddleware

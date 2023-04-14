@@ -30,7 +30,7 @@ dependencies = [
     "faust-streaming",
     "boto3"
 ]
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 dynamic = ["version"]
