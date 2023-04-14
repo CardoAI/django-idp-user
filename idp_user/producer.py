@@ -27,7 +27,7 @@ class Producer(metaclass=Singleton):
         self.__connection.flush()
 
 
-class AioKafkaProducer:
+class AioKafkaProducer(metaclass=Singleton):
     _producer = None
 
     async def get_producer(self):
