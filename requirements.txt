@@ -1,10 +1,8 @@
-Django==4.2
-djangorestframework~=3.14.0
+Django
+djangorestframework
 pyjwt==2.6.0
-requests~=2.28.2
+requests
 drf_spectacular
-faust-streaming==0.10.10
-boto3==1.26.108
-kafka-python3==3.0.0
-asgiref~=3.6.0
-aiokafka~=0.8.0
+faust-streaming
+boto3
+asgiref
