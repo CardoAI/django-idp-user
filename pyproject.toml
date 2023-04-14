@@ -12,13 +12,14 @@ path = "idp_user/__init__.py"
 name = "django_idp_user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
 authors = [
+    {email = "hello@cardoai.com"},
     {name = "Mahmoud Al-Rawy"},
     {name = "Euron Metaliaj"},
     {name = "Klajdi Çaushi"},
     {name = "Aleksandër Nasto"},
     {name = "Andi Çuku"},
-    {name = "Andi Çuku"},
     {name = "Klement Omeri"},
+    {name = "Lirim Shala"},
 ]
 dependencies = [
     "Django",
