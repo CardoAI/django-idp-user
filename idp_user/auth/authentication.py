@@ -8,12 +8,12 @@ from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
 from rest_framework import authentication, status
 from rest_framework.request import Request
-from utils.typing import JwtData
 
 from idp_user.models import User
 from idp_user.services.async_user import UserServiceAsync
 from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 from idp_user.utils.functions import get_or_none, parse_query_params_from_scope
+from idp_user.utils.typing import JwtData
 
 logger = logging.getLogger(__name__)
 

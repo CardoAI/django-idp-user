@@ -10,18 +10,11 @@ from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
-from utils.typing import (
-    ALL,
-    AppEntityRecordEventDict,
-    AppEntityTypeConfig,
-    UserRecordDict,
-    UserTenantData,
-)
 
-from ..models import User
-from ..models.user_role import UserRole
-from ..producer import Producer
-from ..settings import (
+from idp_user.models import UserRole
+from idp_user.models.user import User
+from idp_user.producer import Producer
+from idp_user.settings import (
     APP_ENTITIES,
     APP_ENTITY_RECORD_EVENT_TOPIC,
     APP_IDENTIFIER,
@@ -29,13 +22,24 @@ from ..settings import (
     ROLES,
     TENANTS,
 )
-from ..signals import post_create_idp_user, post_update_idp_user, pre_update_idp_user
-from ..utils.exceptions import UnsupportedAppEntityType
-from ..utils.functions import (
+from idp_user.signals import (
+    post_create_idp_user,
+    post_update_idp_user,
+    pre_update_idp_user,
+)
+from idp_user.utils.exceptions import UnsupportedAppEntityType
+from idp_user.utils.functions import (
     cache_user_service_results,
     get_or_none,
     keep_keys,
     update_record,
+)
+from idp_user.utils.typing import (
+    ALL,
+    AppEntityRecordEventDict,
+    AppEntityTypeConfig,
+    UserRecordDict,
+    UserTenantData,
 )
 
 logger = logging.getLogger(__name__)

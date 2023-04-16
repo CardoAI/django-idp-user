@@ -4,8 +4,8 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from faust import StreamT
 
-from .services import UserService
-from .settings import CONSUMER_APP_ENV
+from idp_user.services import UserService
+from idp_user.settings import CONSUMER_APP_ENV
 
 app = import_string(settings.IDP_USER_APP["FAUST_APP_PATH"])
 

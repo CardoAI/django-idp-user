@@ -7,10 +7,10 @@ from django.db import models
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
-from utils.typing import ALL, AppEntityTypeConfig, UserTenantData
 
 from idp_user.models import User
 from idp_user.models.user_role import UserRole
+from idp_user.services.user import UserService
 from idp_user.settings import APP_ENTITIES, ROLES
 from idp_user.signals import post_create_idp_user
 from idp_user.utils.functions import (
@@ -20,8 +20,7 @@ from idp_user.utils.functions import (
     parse_query_params_from_scope,
     update_record,
 )
-
-from .user import UserService
+from idp_user.utils.typing import ALL, AppEntityTypeConfig, UserTenantData
 
 logger = logging.getLogger(__name__)
 
