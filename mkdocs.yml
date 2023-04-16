@@ -1,0 +1,60 @@
+site_name: Django IDP User
+site_description: A Django app that handles the communication between the IDP and the products for the authorization of users.
+repo_name: CardoAI/idp-authentication
+repo_url: https://github.com/CardoAI/idp-authentication
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+          icon: material/lightbulb-outline
+          name: Switch to light mode
+  features:
+  - navigation.footer
+  - search.suggest
+  - search.highlight
+  - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github-alt
+  language: en
+plugins:
+- search
+- termynal
+
+nav:
+- Django IDP User: index.md
+- Users: pages/getting_started.md
+- Authentication: pages/authentication.md
+- Authorization: pages/authorization.md
+- API: pages/api.md
+
+markdown_extensions:
+- toc:
+    permalink: true
+- markdown.extensions.codehilite:
+    guess_lang: false
+- mdx_include:
+    base_path: docs
+- admonition
+- codehilite
+- extra
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format ''
+- pymdownx.tabbed:
+    alternate_style: true
+- attr_list
+- md_in_html
+extra_css:
+- https://fastapi.tiangolo.com/css/termynal.css
+- https://fastapi.tiangolo.com/css/custom.css
+extra_javascript:
+- https://fastapi.tiangolo.com/js/termynal.js
+- https://fastapi.tiangolo.com/js/custom.js
