@@ -2,6 +2,7 @@
 
 [![hatch-badge]][hatch]
 [![pypi-badge]][pypi]
+[![build-status-image]][build-status]
 [![package-status]][repo]
 [![github-last-commit]][repo]
 
@@ -155,3 +156,5 @@ application = ProtocolTypeRouter({
 [hatch]: https://github.com/pypa/hatch
 [hatch-badge]: https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg
 [github-last-commit]: https://img.shields.io/github/last-commit/CardoAI/django-idp-user
+[build-status-image]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml/badge.svg
+[build-status]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml
