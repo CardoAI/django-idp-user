@@ -1,5 +1,12 @@
 # Django IDP User
 
+[![hatch-badge]][hatch]
+[![pypi-badge]][pypi]
+[![package-status]][repo]
+[![github-last-commit]][repo]
+
+---
+
 ## Installation
 
 1. Install the package:
@@ -139,3 +146,12 @@ application = ProtocolTypeRouter({
 
   * The environment of the Faust Kafka Consumer app.
   * If not set, the value of ``APP_ENV`` will be used.
+
+
+[repo]: https://github.com/godd0t/django-drf-async
+[package-status]: https://img.shields.io/badge/package--status-production-green
+[pypi]: https://pypi.org/project/django-idp-user/
+[pypi-badge]: https://badge.fury.io/py/django-idp-user.svg
+[hatch]: https://github.com/pypa/hatch
+[hatch-badge]: https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg
+[github-last-commit]: https://img.shields.io/github/last-commit/CardoAI/django-idp-user

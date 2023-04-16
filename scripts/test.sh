@@ -3,4 +3,4 @@ APP_PATH="idp_user"
 
 export PYTHONPATH=$APP_PATH
 
-pytest
+pytest --cov=$APP_PATH

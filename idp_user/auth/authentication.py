@@ -88,9 +88,12 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             self._access_token_required(request)
             jwt_data = self._get_jwt_payload(request)
             self._verify_jwt_claims(jwt_data, ["username"])
-            return self._get_user(jwt_data["username"]), self
+            user = self._get_user(jwt_data["username"])
+            auth = self
         except (AuthenticationError, MissingHeaderError):
-            return None, None
+            user = None
+            auth = None
+        return user, auth
 
 
 class IDPAuthBackend(ModelBackend):

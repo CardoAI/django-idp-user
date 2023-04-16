@@ -8,6 +8,9 @@ allow-direct-references = true
 [tool.hatch.version]
 path = "idp_user/__init__.py"
 
+[tool.hatch.build.targets.wheel]
+packages = ["idp_user"]
+
 [project]
 name = "django_idp_user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
@@ -20,6 +23,23 @@ authors = [
     {name = "Andi Çuku"},
     {name = "Klement Omeri"},
     {name = "Lirim Shala"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
     "Django",
@@ -46,6 +66,7 @@ test = [
     "isort==5.11.3",
     "ruff==0.0.259",
     "pytest-cov==4.0.0",
+    "pytest-django==4.5.2",
     "Faker==15.3.4"
 ]
 async = [
@@ -61,10 +82,12 @@ addopts = "-ra -q --strict-markers --capture=no --log-cli-level=INFO"
 testpaths = [
     "tests",
 ]
-python_files = "tests.py test_*.py *_tests.py"
+python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]
 filterwarnings = [
     'ignore::DeprecationWarning:kombu.*:',
 ]
+DJANGO_SETTINGS_MODULE = "tests.test_settings"
+
 
 [tool.coverage.report]
 exclude_lines = [
@@ -74,6 +97,10 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "import*",
 ]
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/tests/*", "*/conf/*", "*__init__.py", "idp_user/apps.py", "idp_user/agents.py"]
+source = ["idp_user"]
 
 [tool.black]
 line-length = 88
