@@ -155,6 +155,6 @@ application = ProtocolTypeRouter({
 [pypi-badge]: https://badge.fury.io/py/django-idp-user.svg
 [hatch]: https://github.com/pypa/hatch
 [hatch-badge]: https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg
-[github-last-commit]: https://img.shields.io/github/last-commit/CardoAI/django-idp-user
+[github-last-commit]: https://img.shields.io/github/last-commit/godd0t/django-idp-user
 [build-status-image]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml/badge.svg
 [build-status]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml
