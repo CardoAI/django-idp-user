@@ -10,7 +10,7 @@ class TestAuthenticationBackend:
     jwt_data: JwtData = {"other_claim": "value"}
 
     @pytest.fixture(autouse=True)
-    def _request_google_page(self, auth_backend, mock_request):
+    def setup(self, auth_backend, mock_request):
         self._auth_backend = auth_backend
         self._mock_request = mock_request
 

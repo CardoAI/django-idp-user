@@ -13,7 +13,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "tests.test_apps.TestConfig",
+    "tests.test_apps.AppTestConfig",
     'idp_user',
 )
 ROOT_URLCONF = ''  # tests override urlconf, but it still needs to be defined
@@ -53,7 +53,7 @@ IDP_USER_APP = {
     "USE_REDIS_CACHE": False,
     "APP_ENTITIES": {
         "test_model": {
-            "model": "tests.test_app_entity.TestAppEntity",
+            "model": "tests.test_app_entity.AppEntityTest",
             "identifier_attr": "id",
             "label_attr": "name",
         },
