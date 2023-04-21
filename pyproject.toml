@@ -43,10 +43,8 @@ classifiers = [
 ]
 dependencies = [
     "Django",
-    "djangorestframework",
     "pyjwt==2.6.0",
     "requests",
-    "drf_spectacular",
     "faust-streaming",
     "boto3"
 ]
@@ -60,6 +58,10 @@ dependencies = {file = ["requirements.txt"]}
 
 
 [project.optional-dependencies]
+drf = [
+    "djangorestframework",
+    "drf_spectacular",
+]
 async = [
     "Django~=4.1.1",
     "asgiref~=3.6.0",
