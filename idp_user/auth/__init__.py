@@ -1,5 +1,2 @@
-from .authentication import (
-    AuthenticationBackend,
-    IDPAuthBackend,
-    IDPChannelsAuthenticationMiddleware,
-)
+from .async_authentication import IDPChannelsAuthenticationMiddleware
+from .authentication import AuthenticationBackend, IDPAuthBackend

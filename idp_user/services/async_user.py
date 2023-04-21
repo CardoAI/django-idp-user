@@ -3,14 +3,13 @@ from collections import defaultdict
 from typing import Any, Optional, Union
 
 from asgiref.sync import sync_to_async
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import Q, QuerySet
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.request import Request
+from django.http import HttpRequest
 
 from idp_user.models import User
 from idp_user.models.user_role import UserRole
-from idp_user.services.user import UserService
 from idp_user.settings import APP_ENTITIES, ROLES
 from idp_user.signals import post_create_idp_user
 from idp_user.utils.functions import (
@@ -28,8 +27,8 @@ logger = logging.getLogger(__name__)
 class UserServiceAsync:
     # Service Methods Used by Django Application
     @staticmethod
-    async def get_role(request: Request):
-        return UserService.get_role(request)
+    def get_role(request: HttpRequest):
+        return request.query_params.get("role")
 
     @staticmethod
     async def get_role_from_scope(scope):
@@ -251,10 +250,9 @@ class UserServiceAsync:
         )
         if user:
             await sync_to_async(update_record)(user, **user_data)
-            UserService._invalidate_user_cache_entries(user=user)
         else:
             user = await User.objects.acreate(**user_data)
-            post_create_idp_user.send(sender=UserService, user=user)
+            post_create_idp_user.send(sender=UserServiceAsync, user=user)
         return user
 
     @staticmethod
