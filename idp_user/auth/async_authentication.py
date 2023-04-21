@@ -1,8 +1,8 @@
 import aiohttp
 from django.conf import settings
-from utils.functions import parse_query_params_from_scope
 
 from idp_user.services.async_user import UserServiceAsync
+from idp_user.utils.functions import parse_query_params_from_scope
 
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 
