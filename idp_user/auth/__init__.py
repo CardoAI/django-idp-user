@@ -1,2 +1,6 @@
-from .async_authentication import IDPChannelsAuthenticationMiddleware
-from .authentication import AuthenticationBackend, IDPAuthBackend
+try:
+    import rest_framework
+
+    from .authentication import AuthenticationBackend, IDPAuthBackend
+except ImportError:
+    from .async_authentication import IDPChannelsAuthenticationMiddleware
