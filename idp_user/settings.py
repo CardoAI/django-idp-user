@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.module_loading import import_string
 
+ASYNC_MODE = settings.IDP_USER_APP.get("ASYNC_MODE", False)
 APP_IDENTIFIER = settings.IDP_USER_APP["APP_IDENTIFIER"]
 IN_DEV = settings.APP_ENV == "development"
 ROLES = import_string(settings.IDP_USER_APP.get("ROLES"))

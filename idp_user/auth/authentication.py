@@ -2,13 +2,11 @@ import logging
 from typing import Callable, List, Literal, Optional
 
 import jwt
-import requests
 from django.conf import settings
-from django.contrib.auth.backends import ModelBackend
-from rest_framework import authentication, status
+from rest_framework import authentication
 from rest_framework.request import Request
 
-from idp_user.models import User
+from idp_user.models.user import User
 from idp_user.utils.exceptions import AuthenticationError, MissingHeaderError
 from idp_user.utils.functions import get_or_none
 from idp_user.utils.typing import JwtData
@@ -92,30 +90,3 @@ class AuthenticationBackend(authentication.TokenAuthentication):
             user = None
             auth = None
         return user, auth
-
-
-class IDPAuthBackend(ModelBackend):
-    def authenticate(self, request, **kwargs):
-        access_token = self._fetch_token(request)
-        if not access_token:
-            return None
-
-        response = requests.get(
-            url=f"{IDP_URL}/api/users/me/",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
-        username = response.json()["username"]
-        return get_or_none(User.objects, username=username)
-
-    @staticmethod
-    def _fetch_token(request) -> Optional[str]:
-        response = requests.post(
-            url=f"{IDP_URL}/api/login/",
-            json={
-                "username": request.POST.get("username"),
-                "password": request.POST.get("password"),
-            },
-        )
-
-        if response.status_code == status.HTTP_200_OK:
-            return response.json()["access"]
