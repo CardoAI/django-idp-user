@@ -3,7 +3,7 @@ from typing import Optional
 import requests
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
-from utils.functions import get_or_none
+from idp_user.utils.functions import get_or_none
 
 from idp_user.models.user import User
 
