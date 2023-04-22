@@ -3,9 +3,9 @@ from typing import Optional
 import requests
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
-from idp_user.utils.functions import get_or_none
 
 from idp_user.models.user import User
+from idp_user.utils.functions import get_or_none
 
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 HTTP_200_OK = 200
