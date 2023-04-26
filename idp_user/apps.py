@@ -14,7 +14,7 @@ class IDPUserConfig(AppConfig):
         if not is_kafka_configured:
             return
 
-        from idp_user.services import UserService
+        from idp_user.services.base_user import BaseUserService
         from idp_user.settings import APP_ENTITIES
 
         for (
@@ -23,10 +23,10 @@ class IDPUserConfig(AppConfig):
         ) in APP_ENTITIES.items():
             model = config["model"]
             post_save.connect(
-                receiver=UserService.process_app_entity_record_post_save,
+                receiver=BaseUserService.process_app_entity_record_post_save,
                 sender=model,
             )
             post_delete.connect(
-                receiver=UserService.process_app_entity_record_post_delete,
+                receiver=BaseUserService.process_app_entity_record_post_delete,
                 sender=model,
             )

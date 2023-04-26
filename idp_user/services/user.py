@@ -1,8 +1,7 @@
 import logging
 from collections import defaultdict
 from copy import deepcopy
-from datetime import datetime
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.core.cache import cache
@@ -13,21 +12,13 @@ from rest_framework.request import Request
 
 from idp_user.models import UserRole
 from idp_user.models.user import User
-from idp_user.producer import Producer
-from idp_user.settings import (
-    APP_ENTITIES,
-    APP_ENTITY_RECORD_EVENT_TOPIC,
-    APP_IDENTIFIER,
-    IN_DEV,
-    ROLES,
-    TENANTS,
-)
+from idp_user.services.base_user import BaseUserService
+from idp_user.settings import APP_ENTITIES, APP_IDENTIFIER, IN_DEV, ROLES, TENANTS
 from idp_user.signals import (
     post_create_idp_user,
     post_update_idp_user,
     pre_update_idp_user,
 )
-from idp_user.utils.exceptions import UnsupportedAppEntityType
 from idp_user.utils.functions import (
     cache_user_service_results,
     get_or_none,
@@ -36,7 +27,6 @@ from idp_user.utils.functions import (
 )
 from idp_user.utils.typing import (
     ALL,
-    AppEntityRecordEventDict,
     AppEntityTypeConfig,
     UserRecordDict,
     UserTenantData,
@@ -45,7 +35,7 @@ from idp_user.utils.typing import (
 logger = logging.getLogger(__name__)
 
 
-class UserService:
+class UserService(BaseUserService):
     # Service Methods Used by Django Application
     @staticmethod
     def get_role(request: Request):
@@ -384,72 +374,6 @@ class UserService:
     @staticmethod
     def _get_reported_user_app_configs(data):
         return data.get("app_specific_configs", {}).get(APP_IDENTIFIER, {})
-
-    @staticmethod
-    def send_app_entity_record_event_to_kafka(
-        app_entity_type: str, app_entity_record: Any, deleted=False
-    ):
-        app_entity_type_config = APP_ENTITIES[app_entity_type]
-
-        event: AppEntityRecordEventDict = {
-            "app_identifier": APP_IDENTIFIER,
-            "app_entity_type": app_entity_type,
-            "record_identifier": getattr(
-                app_entity_record, app_entity_type_config["identifier_attr"]
-            ),
-            "label": getattr(app_entity_record, app_entity_type_config["label_attr"]),
-            "deleted": deleted,
-        }
-
-        logger.info(f"Sending update {event}...")
-
-        Producer().send_message(
-            topic=APP_ENTITY_RECORD_EVENT_TOPIC, key=str(datetime.now()), data=event
-        )
-
-    @staticmethod
-    def _get_app_entity_type_from_model(model: Type[models.Model]):
-        for (
-            app_entity_type,
-            config,
-        ) in APP_ENTITIES.items():  # type: str, AppEntityTypeConfig
-            if config["model"] == model:
-                return app_entity_type
-
-        raise UnsupportedAppEntityType(model)
-
-    @staticmethod
-    def process_app_entity_record_post_save(
-        sender: Type[models.Model], instance, **kwargs
-    ):
-        """
-        Whenever an app entity record is saved (created/updated),
-        send a message to Kafka to notify the IDP.
-
-        kwargs are required for signal receivers.
-        """
-
-        UserService.send_app_entity_record_event_to_kafka(
-            app_entity_type=UserService._get_app_entity_type_from_model(sender),
-            app_entity_record=instance,
-        )
-
-    @staticmethod
-    def process_app_entity_record_post_delete(
-        sender: Type[models.Model], instance, **kwargs
-    ):
-        """
-        Whenever an app entity record is deleted,
-        send a message to Kafka to notify the IDP.
-
-        kwargs are required for signal receivers.
-        """
-
-        UserService.send_app_entity_record_event_to_kafka(
-            app_entity_type=UserService._get_app_entity_type_from_model(sender),
-            app_entity_record=instance,
-            deleted=True,
-        )
 
     @staticmethod
     def get_users_with_access_to_app_entity_record(
