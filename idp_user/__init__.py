@@ -1,4 +1,3 @@
-from . import checks
-from . import signals
+from idp_user import checks, signals  # noqa
 
-default_app_config = 'idp_user.apps.IDPUserConfig'
+__version__ = "2.1.36"
