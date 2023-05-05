@@ -15,14 +15,14 @@ packages = ["idp_user"]
 name = "django_idp_user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
 authors = [
-    {email = "hello@cardoai.com"},
-    {name = "Mahmoud Al-Rawy"},
-    {name = "Euron Metaliaj"},
-    {name = "Klajdi Çaushi"},
-    {name = "Aleksandër Nasto"},
-    {name = "Andi Çuku"},
-    {name = "Klement Omeri"},
-    {name = "Lirim Shala"},
+    { email = "hello@cardoai.com" },
+    { name = "Mahmoud Al-Rawy" },
+    { name = "Euron Metaliaj" },
+    { name = "Klajdi Çaushi" },
+    { name = "Aleksandër Nasto" },
+    { name = "Andi Çuku" },
+    { name = "Klement Omeri" },
+    { name = "Lirim Shala" },
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -46,7 +46,9 @@ dependencies = [
     "pyjwt==2.6.0",
     "requests",
     "faust-streaming",
-    "boto3"
+    "boto3",
+    "djangorestframework",
+    "drf_spectacular",
 ]
 readme = "README.md"
 requires-python = ">=3.9"
@@ -54,14 +56,10 @@ license = "MIT"
 dynamic = ["version"]
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+dependencies = { file = ["requirements.txt"] }
 
 
 [project.optional-dependencies]
-drf = [
-    "djangorestframework",
-    "drf_spectacular",
-]
 async = [
     "Django>=4.1.1",
     "asgiref>=3.6.0",
@@ -149,17 +147,17 @@ extend-exclude = [
 ]
 
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
     # "I",  # isort
-    "C",  # flake8-comprehensions
-    "B",  # flake8-bugbear
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
 ]
 ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
     "F405", # name may be undefined, or defined from star imports
 ]
 
@@ -185,7 +183,7 @@ exclude = [
     "migrations",
     "venv",
 ]
-per-file-ignores = {}
+per-file-ignores = { }
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
