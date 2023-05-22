@@ -2,28 +2,10 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.version]
-path = "idp_user/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["idp_user"]
-
 [project]
 name = "django-idp-user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
-authors = [
-    { email = "hello@cardoai.com" },
-    { name = "Mahmoud Al-Rawy" },
-    { name = "Euron Metaliaj" },
-    { name = "Klajdi Çaushi" },
-    { name = "Aleksandër Nasto" },
-    { name = "Andi Çuku" },
-    { name = "Klement Omeri" },
-    { name = "Lirim Shala" },
-]
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
@@ -42,155 +24,155 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "Django",
-    "pyjwt==2.6.0",
-    "requests",
-    "faust-streaming",
-    "boto3",
-    "djangorestframework",
-    "drf_spectacular",
+    "Pyjwt ==2.6.0",
+    "boto3 ==1.26.138",
+    "Django ==4.2.1",
+    "djangorestframework ==3.14.0",
+    "drf-spectacular ==0.26.2",
+    "faust-streaming ==0.10.12",
+    "requests ==2.31.0",
 ]
-readme = "README.md"
-requires-python = ">=3.9"
-license = "MIT"
 dynamic = ["version"]
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"] }
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
 
+[project.license]
+file = "LICENSE"
+
+[[project.authors]]
+email = "hello@cardoai.com"
+
+[[project.authors]]
+name = "Mahmoud Al-Rawy"
+
+[[project.authors]]
+name = "Euron Metaliaj"
+
+[[project.authors]]
+name = "Klajdi Çaushi"
+
+[[project.authors]]
+name = "Aleksandër Nasto"
+
+[[project.authors]]
+name = "Andi Çuku"
+
+[[project.authors]]
+name = "Klement Omeri"
+
+[[project.authors]]
+name = "Lirim Shala"
 
 [project.optional-dependencies]
 async = [
-    "Django>=4.1.1",
-    "asgiref>=3.6.0",
-    "aiokafka>=0.8.0",
-    "aiohttp>=3.8.4"
+    "Django ==4.2.1",
+    "aiokafka ==0.8.0",
+    "aiohttp ==3.8.4",
 ]
-test = [
-    "pytest==7.2.0",
-    "black>=22.10.0",
-    "isort==5.11.3",
-    "ruff==0.0.259",
-    "pytest-cov==4.0.0",
-    "pytest-django==4.5.2",
-    "Faker==15.3.4"
+dev = [
+    "pytest ==7.3.1",
+    "pytest-django ==4.5.2",
+    "Faker ==18.9.0",
+    "pytest-sugar ==0.9.7",
+    "ruff ==0.0.269",
+    "black ==23.3.0",
+    "coverage[toml] ==7.2.5",
+    "build ==0.10.0",
 ]
 docs = [
-    "mkdocs-material==9.0.6",
-    "mdx_include==1.4.2",
-    "mkdocs-markdownextradata-plugin==0.2.5",
-    "termynal==0.2.1",
+    "mkdocs-material ==9.1.14",
+    "mdx-include ==1.4.2",
+    "mkdocs-markdownextradata-plugin ==0.2.5",
+    "termynal ==0.3.0",
 ]
+
+[tool.hatchling]
+allow-direct-references = true
+
+[tool.hatch.version]
+path = "idp_user/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["idp_user"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --capture=no --log-cli-level=INFO"
-testpaths = [
-    "tests",
+addopts = "-ra -q --force-sugar --no-migrations --reuse-db --log-cli-level=INFO"
+testpaths = ["tests"]
+pythonpath = [
+    ".",
+    "idp_user",
 ]
-python_files = ["test_*.py", "*_test.py", "testing/python/*.py"]
-filterwarnings = [
-    'ignore::DeprecationWarning:kombu.*:',
-]
+python_files = "tests.py test_*.py *_tests.py"
 DJANGO_SETTINGS_MODULE = "tests.test_settings"
-
+filterwarnings = [
+    "ignore::DeprecationWarning:kombu.*:",
+    "ignore::DeprecationWarning:celery.*:",
+]
 
 [tool.coverage.report]
+fail_under = 85
+show_missing = "true"
 exclude_lines = [
     "pragma: no cover",
     "raise NotImplementedError",
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.:",
     "import*",
+    "def __str__",
+    "def on_success",
+    "def clean",
 ]
 
 [tool.coverage.run]
-omit = ["*/migrations/*", "*/tests/*", "*/conf/*", "*__init__.py", "idp_user/apps.py", "idp_user/agents.py"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/urls.py",
+    "*/settings/*",
+    "*/wsgi.py",
+    "manage.py",
+    "*__init__.py",
+]
 source = ["idp_user"]
 
 [tool.black]
 line-length = 88
-target-version = ['py39', 'py310', 'py311']
+target-version = ["py311"]
 include = '\.pyi?$'
-exclude = '''
-/(
-  # The following are specific to Black, you probably don't want those.
-  | blib2to3
-  | tests/data/
-  | profiling
-  | migrations
-  | docs
-  | deplyoment
-  | .git
-  | scripts
-  | media
-  | static
-  | .venv
-)/
-'''
-
-[tool.isort]
-profile = "black"
-skip = "migrations"
+extend-exclude = """
+^(.*/)?migrations/.*$
+"""
 
 [tool.ruff]
+format = "grouped"
 line-length = 88
 extend-exclude = [
-    "*/migrations/*",
-    "codebase/media/*",
-    "codebase/static/*",
-    "codbase/documents/tests/test_data/*",
-    "*/conf/*",
-    "codebase/manage.py",
-    "*__init__.py",
-    "idp_user"
+    ".migrations",
+    ".media",
+    ".static",
+    "manage.py",
+    ".test_data",
+    "__init__.py",
 ]
-
 select = [
-    "E", # pycodestyle errors
-    "W", # pycodestyle warnings
-    "F", # pyflakes
-    # "I",  # isort
-    "C", # flake8-comprehensions
-    "B", # flake8-bugbear
+    "E",
+    "F",
 ]
 ignore = [
-    "E501", # line too long, handled by black
-    "B008", # do not perform function calls in argument defaults
-    "C901", # too complex
-    "F405", # name may be undefined, or defined from star imports
+    "E501",
+    "B008",
+    "C901",
+    "F405",
 ]
-
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "migrations",
-    "venv",
-]
-per-file-ignores = { }
-
-# Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-# Assume Python 3.11.
 target-version = "py311"
 
 [tool.ruff.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
+
+[tool.ruff.isort]
+force-to-top = ["idp_user"]
+known-first-party = ["idp_user"]
