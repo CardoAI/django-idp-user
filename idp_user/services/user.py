@@ -13,14 +13,24 @@ from rest_framework.request import Request
 from idp_user.models import UserRole
 from idp_user.models.user import User
 from idp_user.services.base_user import BaseUserService
-from idp_user.settings import (APP_ENTITIES, APP_IDENTIFIER, IN_DEV, ROLES,
-                               TENANTS)
-from idp_user.signals import (post_create_idp_user, post_update_idp_user,
-                              pre_update_idp_user)
-from idp_user.utils.functions import (cache_user_service_results, get_or_none,
-                                      keep_keys, update_record)
-from idp_user.utils.typing import (ALL, AppEntityTypeConfig, UserRecordDict,
-                                   UserTenantData)
+from idp_user.settings import APP_ENTITIES, APP_IDENTIFIER, IN_DEV, ROLES, TENANTS
+from idp_user.signals import (
+    post_create_idp_user,
+    post_update_idp_user,
+    pre_update_idp_user,
+)
+from idp_user.utils.functions import (
+    cache_user_service_results,
+    get_or_none,
+    keep_keys,
+    update_record,
+)
+from idp_user.utils.typing import (
+    ALL,
+    AppEntityTypeConfig,
+    UserRecordDict,
+    UserTenantData,
+)
 
 logger = logging.getLogger(__name__)
 

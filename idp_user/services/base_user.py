@@ -5,8 +5,11 @@ from typing import Any, Type
 from django.db import models
 
 from idp_user.producer import Producer
-from idp_user.settings import (APP_ENTITIES, APP_ENTITY_RECORD_EVENT_TOPIC,
-                               APP_IDENTIFIER)
+from idp_user.settings import (
+    APP_ENTITIES,
+    APP_ENTITY_RECORD_EVENT_TOPIC,
+    APP_IDENTIFIER,
+)
 from idp_user.utils.exceptions import UnsupportedAppEntityType
 from idp_user.utils.typing import AppEntityRecordEventDict
 
