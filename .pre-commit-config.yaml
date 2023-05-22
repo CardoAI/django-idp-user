@@ -5,4 +5,4 @@ repos:
     -   id: make-lint
     -   id: make-format
     -   id: make-test
-#    -   id: update-version
+    -   id: update-version

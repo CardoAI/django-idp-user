@@ -10,6 +10,7 @@ Manage $(PROJECTNAME). Usage:
 make lint           	Run linter
 make format         	Run formatter
 make test           	Run tests
+make update-version 	Update version in readme.md
 make pre-commit     	Install pre-commit hooks
 
 endef
@@ -25,6 +26,9 @@ format:
 
 test:
 	@bash ./scripts/test.sh
+
+update-version:
+	python ./scripts/update_version.py
 
 pre-commit:
 	pre-commit install

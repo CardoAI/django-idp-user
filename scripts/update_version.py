@@ -20,8 +20,7 @@ if version:
             readme_file.write(updated_content)
             readme_file.truncate()
             print('Version replaced successfully in README.md')
-            print('Updated content in README.md:')
-            print(updated_content)
+            print(f'New version: {version}')
         else:
             print('Version in README.md is already up to date')
 else:
