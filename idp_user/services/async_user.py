@@ -12,13 +12,9 @@ from idp_user.models import User
 from idp_user.models.user_role import UserRole
 from idp_user.settings import APP_ENTITIES, ROLES
 from idp_user.signals import post_create_idp_user
-from idp_user.utils.functions import (
-    cache_user_service_results,
-    get_or_none,
-    keep_keys,
-    parse_query_params_from_scope,
-    update_record,
-)
+from idp_user.utils.functions import (cache_user_service_results, get_or_none,
+                                      keep_keys, parse_query_params_from_scope,
+                                      update_record)
 from idp_user.utils.typing import ALL, AppEntityTypeConfig, UserTenantData
 
 logger = logging.getLogger(__name__)

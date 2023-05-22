@@ -25,12 +25,12 @@ classifiers = [
 ]
 dependencies = [
     "Pyjwt ==2.6.0",
-    "boto3 ==1.26.138",
-    "Django ==4.2.1",
-    "djangorestframework ==3.14.0",
-    "drf-spectacular ==0.26.2",
-    "faust-streaming ==0.10.12",
-    "requests ==2.31.0",
+    "boto3",
+    "Django",
+    "djangorestframework",
+    "drf-spectacular",
+    "faust-streaming",
+    "requests",
 ]
 dynamic = ["version"]
 
@@ -67,9 +67,9 @@ name = "Lirim Shala"
 
 [project.optional-dependencies]
 async = [
-    "Django ==4.2.1",
-    "aiokafka ==0.8.0",
-    "aiohttp ==3.8.4",
+    "Django >=4.2.1",
+    "aiokafka",
+    "aiohttp",
 ]
 dev = [
     "pytest ==7.3.1",
@@ -80,6 +80,7 @@ dev = [
     "black ==23.3.0",
     "coverage[toml] ==7.2.5",
     "build ==0.10.0",
+    "pre-commit ==3.3.2"
 ]
 docs = [
     "mkdocs-material ==9.1.14",

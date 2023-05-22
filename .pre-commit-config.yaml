@@ -1,0 +1,8 @@
+repos:
+-   repo: https://github.com/godd0t/dev-pre-commit
+    rev: 0.0.2
+    hooks:
+    -   id: make-lint
+    -   id: make-format
+#    -   id: make-test
+#    -   id: update-version
