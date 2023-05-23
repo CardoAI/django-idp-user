@@ -35,16 +35,23 @@ jobs:
         run: |
           make test
 
-#  deploy-docs:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v3
-#      - uses: actions/setup-python@v4
-#        with:
-#          python-version: 3.11
-#      - uses: actions/cache@v3
-#        with:
-#          key: ${{ github.ref }}
-#          path: .cache
-#      - run: pip install -e .[docs]
-#      - run: mkdocs gh-deploy --force
+  deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: godd0t/docs
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - uses: actions/cache@v3
+        with:
+          key: ${{ github.ref }}
+          path: .cache
+
+      - run: pip install -e .[docs]
+
+      - run: mkdocs gh-deploy --force
