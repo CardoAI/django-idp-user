@@ -45,9 +45,12 @@ jobs:
     runs-on: ubuntu-latest
 #    needs: build-lint-test
     steps:
-      - name: Push docs
-        uses: godd0t/push-docs-action@v0.1
+      - uses: actions/checkout@v3
         with:
-          target_repository: 'godd0t/docs'
-          pat_token: ${{ secrets.PAT_TOKEN }}
           github-token: ${{ secrets.PAT_TOKEN }}
+      - name: Push docs
+        uses:
+            godd0t/docs-action@main
+        with:
+          target_repository: ${{ github.repository }}
+          pat_token: ${{ secrets.PAT_TOKEN }}
