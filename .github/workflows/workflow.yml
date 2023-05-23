@@ -49,9 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.target_repository }}
-          token: ${{ secrets.PAT_TOKEN }}
 
       - uses: actions/setup-python@v4
         with:
@@ -64,11 +61,31 @@ jobs:
 
       - run: pip install -e .[docs]
 
-      - run: mkdocs gh-deploy --force
+      - run: mkdocs build --clean --site-dir site
+
+      - name: Checkout godd0t/docs
+        uses: actions/checkout@v3
+        with:
+          repository: godd0t/docs
+          token: ${{ secrets.PAT_TOKEN }}
+          path: docs
+
+      - name: Move built docs
+        run: |
+          cp -r site/* docs/
+
+      - name: Commit and push
+        run: |
+          cd docs
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update docs" -a
+          git push
 
       - name: Create dispatch event
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          repository: django-idp-user
+          repository: godd0t/django-idp-user
           event-type: deployment-complete
