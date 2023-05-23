@@ -2,9 +2,18 @@ name: CI
 
 on:
   push:
+    branches: [ main ]
   pull_request:
-    branches: [ main, staging ]
+    branches: [ main ]
   workflow_dispatch:
+    inputs:
+      target_repository:
+        description: 'Target repository'
+        required: true
+        default: 'godd0t/docs'
+
+permissions:
+  contents: write
 
 jobs:
   build-lint-test:
@@ -41,8 +50,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: godd0t/docs
-          token: ${{ secrets.PAT_TOKEN }}
+          repository: ${{ github.event.inputs.target_repository }}
+          token: ${{ secrets.PAT_TOKEN }} # Replace with the actual name of your secret containing the PAT
 
       - uses: actions/setup-python@v4
         with:
@@ -53,6 +62,13 @@ jobs:
           key: ${{ github.ref }}
           path: .cache
 
-      - run: pip install -e ."[docs]"
+      - run: pip install -e .[docs]
 
       - run: mkdocs gh-deploy --force
+
+      - name: Create dispatch event
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.PAT_TOKEN }} # Replace with the actual name of your secret containing the PAT
+          repository: django-idp-user
+          event-type: deployment-complete
