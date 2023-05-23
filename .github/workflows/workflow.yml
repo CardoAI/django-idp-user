@@ -59,17 +59,17 @@ jobs:
 
       - name: Create repo subdirectory
         run: |
-          REPO_SUBDIR="projects/${{ github.repository_owner }}/${{ github.repository }}"
+          REPO_SUBDIR="projects/${{ github.repository }}"
           mkdir -p "docs_repo/docs/$REPO_SUBDIR"
 
       - name: Move docs
         run: |
-          REPO_SUBDIR="projects/${{ github.repository_owner }}/${{ github.repository }}"
+          REPO_SUBDIR="projects/${{ github.repository }}"
           cp -r docs/* "docs_repo/docs/$REPO_SUBDIR/"
 
       - name: Update index.md
         run: |
-          REPO_URL="./${{ github.repository_owner }}_${{ github.repository }}/index.md"
+          REPO_URL="./${{ github.repository }}/index.md"
           echo "- [${{ github.repository }}]($REPO_URL)" >> docs_repo/docs/index.md
 
       - name: Commit and push
