@@ -69,16 +69,22 @@ jobs:
           repository: godd0t/docs
           token: ${{ secrets.PAT_TOKEN }}
           path: docs
+          ref: gh-pages
 
       - name: Create repo subdirectory
         run: |
-          REPO_SUBDIR="${{ github.repository_owner }}:${{ github.repository }}"
+          REPO_SUBDIR="${{ github.repository_owner }}_${{ github.repository }}"
           mkdir -p "docs/$REPO_SUBDIR"
 
       - name: Move built docs
         run: |
-          REPO_SUBDIR="${{ github.repository_owner }}:${{ github.repository }}"
+          REPO_SUBDIR="${{ github.repository_owner }}_${{ github.repository }}"
           cp -r site/* "docs/$REPO_SUBDIR/"
+
+      - name: Update base index
+        run: |
+          REPO_URL="https://godd0t.github.io/${{ github.repository_owner }}_${{ github.repository }}/"
+          echo "- [${{ github.repository }}]($REPO_URL)" >> docs/base_docs/index.md
 
       - name: Commit and push
         run: |
@@ -87,11 +93,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Update docs for ${{ github.repository }}" -a
-          git push
-
-      - name: Create dispatch event
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          repository: godd0t/django-idp-user
-          event-type: deployment-complete
+          git push origin gh-pages
