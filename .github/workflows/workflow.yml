@@ -50,3 +50,4 @@ jobs:
         with:
           target_repository: 'godd0t/docs'
           pat_token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
