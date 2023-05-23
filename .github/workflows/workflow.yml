@@ -36,7 +36,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[test,drf,async]
+          pip install -e .[dev,async]
       - name: Lint with black and ruff
         run: |
           make lint
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.target_repository }}
-          token: ${{ secrets.PAT_TOKEN }} # Replace with the actual name of your secret containing the PAT
+          token: ${{ secrets.PAT_TOKEN }}
 
       - uses: actions/setup-python@v4
         with:
@@ -69,6 +69,6 @@ jobs:
       - name: Create dispatch event
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.PAT_TOKEN }} # Replace with the actual name of your secret containing the PAT
+          token: ${{ secrets.PAT_TOKEN }}
           repository: django-idp-user
           event-type: deployment-complete
