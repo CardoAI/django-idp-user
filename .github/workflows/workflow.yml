@@ -70,9 +70,15 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           path: docs
 
+      - name: Create repo subdirectory
+        run: |
+          REPO_SUBDIR="${{ github.repository_owner }}:${{ github.repository }}"
+          mkdir -p "docs/$REPO_SUBDIR"
+
       - name: Move built docs
         run: |
-          cp -r site/* docs/
+          REPO_SUBDIR="${{ github.repository_owner }}:${{ github.repository }}"
+          cp -r site/* "docs/$REPO_SUBDIR/"
 
       - name: Commit and push
         run: |
@@ -80,7 +86,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Update docs" -a
+          git commit -m "Update docs for ${{ github.repository }}" -a
           git push
 
       - name: Create dispatch event
