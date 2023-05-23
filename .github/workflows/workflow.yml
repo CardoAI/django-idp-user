@@ -68,35 +68,31 @@ jobs:
         with:
           repository: godd0t/docs
           token: ${{ secrets.PAT_TOKEN }}
-          path: docs
+          path: docs_repo
           ref: gh-pages
 
       - name: Create repo subdirectory
         run: |
-          REPO_SUBDIR="${{ github.repository_owner }}_${{ github.repository }}"
-          mkdir -p "docs/$REPO_SUBDIR"
+          REPO_SUBDIR="docs_repo/docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
+          mkdir -p "$REPO_SUBDIR"
 
       - name: Move built docs
         run: |
-          REPO_SUBDIR="${{ github.repository_owner }}_${{ github.repository }}"
-          cp -r site/* "docs/$REPO_SUBDIR/"
-
-      - name: Ensure base index exists
-        run: |
-          if [ ! -f base_docs/index.md ]; then
-            echo "# Index" > base_docs/index.md
-          fi
+          REPO_SUBDIR="docs_repo/docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
+          cp -r site/* "$REPO_SUBDIR/"
 
       - name: Update base index
         run: |
-          REPO_URL="https://godd0t.github.io/${{ github.repository_owner }}_${{ github.repository }}/"
-          echo "- [${{ github.repository }}]($REPO_URL)" >> base_docs/index.md
+          REPO_SUBDIR="docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
+          REPO_URL="./$REPO_SUBDIR"
+          echo "- [${{ github.repository }}]($REPO_URL)" >> docs_repo/docs/index.md
 
       - name: Commit and push
         run: |
-          cd docs
+          cd docs_repo
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Update docs for ${{ github.repository }}" -a
           git push origin gh-pages
+  
