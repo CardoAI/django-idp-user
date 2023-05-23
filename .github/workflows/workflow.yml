@@ -44,16 +44,13 @@ jobs:
   push-docs:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout private action
+      - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          repository: godd0t/push-docs-action
-          token: ${{ secrets.PAT_TOKEN }}
-          path: ./.github/actions/push-docs-action
       - name: Push docs
-        uses: ./.github/actions/push-docs-action
+        uses: ./.github/actions/push-docs-action@v0.1
         with:
           target_repository: 'godd0t/docs'
           pat_token: ${{ secrets.PAT_TOKEN }}
           token: ${{ secrets.PAT_TOKEN }}
+
 
