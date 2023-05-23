@@ -81,6 +81,12 @@ jobs:
           REPO_SUBDIR="${{ github.repository_owner }}_${{ github.repository }}"
           cp -r site/* "docs/$REPO_SUBDIR/"
 
+      - name: Ensure base index exists
+        run: |
+          if [ ! -f base_docs/index.md ]; then
+            echo "# Index" > base_docs/index.md
+          fi
+
       - name: Update base index
         run: |
           REPO_URL="https://godd0t.github.io/${{ github.repository_owner }}_${{ github.repository }}/"
