@@ -50,7 +50,7 @@ jobs:
           github-token: ${{ secrets.PAT_TOKEN }}
       - name: Push docs
         uses:
-            godd0t/docs-action@main
+            godd0t/push-docs-action@main
         with:
           target_repository: ${{ github.repository }}
           pat_token: ${{ secrets.PAT_TOKEN }}
