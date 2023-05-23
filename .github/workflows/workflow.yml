@@ -44,47 +44,31 @@ jobs:
 #        run: |
 #          make test
 
-  deploy-docs:
-#    needs: build-lint-test
+  push-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
-
-      - uses: actions/cache@v3
-        with:
-          key: ${{ github.ref }}
-          path: .cache
-
-      - run: pip install -e .[docs]
-
-      - run: mkdocs build --clean --site-dir site
-
-      - name: Checkout godd0t/docs
+      - name: Copy docs to godd0t/docs
         uses: actions/checkout@v3
         with:
           repository: godd0t/docs
           token: ${{ secrets.PAT_TOKEN }}
           path: docs_repo
-          ref: gh-pages
 
       - name: Create repo subdirectory
         run: |
-          REPO_SUBDIR="docs_repo/docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
-          mkdir -p "$REPO_SUBDIR"
+          REPO_SUBDIR="projects/${{ github.repository_owner }}/${{ github.repository }}"
+          mkdir -p "docs_repo/docs/$REPO_SUBDIR"
 
-      - name: Move built docs
+      - name: Move docs
         run: |
-          REPO_SUBDIR="docs_repo/docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
-          cp -r site/* "$REPO_SUBDIR/"
+          REPO_SUBDIR="projects/${{ github.repository_owner }}/${{ github.repository }}"
+          cp -r docs/* "docs_repo/docs/$REPO_SUBDIR/"
 
-      - name: Update base index
+      - name: Update index.md
         run: |
-          REPO_SUBDIR="docs/projects/${{ github.repository_owner }}_${{ github.repository }}"
-          REPO_URL="./$REPO_SUBDIR"
+          REPO_URL="./${{ github.repository_owner }}_${{ github.repository }}/index.md"
           echo "- [${{ github.repository }}]($REPO_URL)" >> docs_repo/docs/index.md
 
       - name: Commit and push
@@ -94,5 +78,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Update docs for ${{ github.repository }}" -a
-          git push origin gh-pages
-  
+          git push origin main
