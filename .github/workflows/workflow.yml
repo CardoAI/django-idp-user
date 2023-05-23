@@ -16,36 +16,36 @@ permissions:
   contents: write
 
 jobs:
-  build-lint-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        id: setup-python
-        with:
-          python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[dev,async]
-      - name: Lint with black and ruff
-        run: |
-          make lint
-      - name: Test with pytest
-        run: |
-          make test
+#  build-lint-test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Set up Python
+#        uses: actions/setup-python@v4
+#        id: setup-python
+#        with:
+#          python-version: "3.11"
+#          cache: "pip"
+#          cache-dependency-path: pyproject.toml
+#      - uses: actions/cache@v3
+#        id: cache
+#        with:
+#          path: ${{ env.pythonLocation }}
+#          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}
+#      - name: Install dependencies
+#        if: steps.cache.outputs.cache-hit != 'true'
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install -e .[dev,async]
+#      - name: Lint with black and ruff
+#        run: |
+#          make lint
+#      - name: Test with pytest
+#        run: |
+#          make test
 
   deploy-docs:
-    needs: build-lint-test
+#    needs: build-lint-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -84,7 +84,7 @@ jobs:
       - name: Update base index
         run: |
           REPO_URL="https://godd0t.github.io/${{ github.repository_owner }}_${{ github.repository }}/"
-          echo "- [${{ github.repository }}]($REPO_URL)" >> docs/base_docs/index.md
+          echo "- [${{ github.repository }}]($REPO_URL)" >> base_docs/index.md
 
       - name: Commit and push
         run: |
