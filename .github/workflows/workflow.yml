@@ -69,7 +69,7 @@ jobs:
 
       - name: Update index.md
         run: |
-          REPO_URL="./${{ github.repository }}/index.md"
+          REPO_SUBDIR="projects/${{ github.repository }}/index.md"
           echo "- [${{ github.repository }}]($REPO_URL)" >> docs_repo/docs/index.md
 
       - name: Commit and push
