@@ -17,7 +17,6 @@ endef
 
 export HELP
 
-
 lint:
 	 @bash ./scripts/lint.sh
 
