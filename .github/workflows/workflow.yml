@@ -41,40 +41,12 @@ jobs:
 #      - name: Test with pytest
 #        run: |
 #          make test
-
   push-docs:
     runs-on: ubuntu-latest
+#    needs: build-lint-test
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Copy docs to godd0t/docs
-        uses: actions/checkout@v3
+      - name: Push docs
+        uses: godd0t/push-docs-action@v1
         with:
-          repository: godd0t/docs
-          token: ${{ secrets.PAT_TOKEN }}
-          path: docs_repo
-          ref: main
-
-      - name: Create repo subdirectory
-        run: |
-          REPO_SUBDIR="projects/${{ github.repository }}"
-          mkdir -p "docs_repo/docs/$REPO_SUBDIR"
-
-      - name: Move docs
-        run: |
-          REPO_SUBDIR="projects/${{ github.repository }}"
-          cp -r docs/* "docs_repo/docs/$REPO_SUBDIR/"
-
-      - name: Update index.md
-        run: |
-          REPO_SUBDIR="projects/${{ github.repository }}/index.md"
-          echo "- [${{ github.repository }}]($REPO_SUBDIR)" >> docs_repo/docs/index.md
-
-      - name: Commit and push
-        run: |
-          cd docs_repo
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Update docs for ${{ github.repository }}" -a
-          git push origin main
+          target_repository: 'godd0t/docs'
+          pat_token: ${{ secrets.PAT_TOKEN }}
