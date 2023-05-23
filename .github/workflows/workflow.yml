@@ -43,14 +43,17 @@ jobs:
 #          make test
   push-docs:
     runs-on: ubuntu-latest
-#    needs: build-lint-test
+    permissions:
+        contents: read, write
+        actions: read, write
+    #    needs: build-lint-test
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
           repository: godd0t/push-docs-action
           ref: v0.1
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           path: ./.github/actions/push-docs-action
       - name: Push docs
         uses: ./.github/actions/push-docs-action
