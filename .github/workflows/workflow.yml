@@ -55,6 +55,7 @@ jobs:
           repository: godd0t/docs
           token: ${{ secrets.PAT_TOKEN }}
           path: docs_repo
+          ref: gh-pages
 
       - name: Create repo subdirectory
         run: |
@@ -78,4 +79,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Update docs for ${{ github.repository }}" -a
-          git push origin main
+          git push origin gh-pages
