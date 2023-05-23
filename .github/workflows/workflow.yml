@@ -36,6 +36,7 @@ jobs:
           make test
 
   deploy-docs:
+    needs: build-lint-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -52,6 +53,6 @@ jobs:
           key: ${{ github.ref }}
           path: .cache
 
-      - run: pip install -e .[docs]
+      - run: pip install -e ."[docs]"
 
       - run: mkdocs gh-deploy --force
