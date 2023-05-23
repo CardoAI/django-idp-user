@@ -23,5 +23,17 @@ if version:
             print(f'New version: {version}')
         else:
             print('Version in README.md is already up to date')
+    with open('docs/index.md', 'r+') as index_file:
+        index_content = index_file.read()
+        updated_content = re.sub(r'\[pypi-badge\]: https://img.shields.io/badge/version-(.+?)-blue', f'[pypi-badge]: https://img.shields.io/badge/version-{version}-blue', index_content)
+
+        if updated_content != index_content:
+            index_file.seek(0)
+            index_file.write(updated_content)
+            index_file.truncate()
+            print('Version replaced successfully in docs/index.md')
+            print(f'New version: {version}')
+        else:
+            print('Version in docs/index.md is already up to date')
 else:
     print('Unable to find __version__ value in idp_user/__init__.py')

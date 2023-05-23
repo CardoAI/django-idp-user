@@ -1,6 +1,5 @@
 # Django IDP User
 
-[![hatch-badge]][hatch]
 [![pypi-badge]][pypi]
 [![build-status-image]][build-status]
 [![package-status]][repo]
@@ -177,9 +176,7 @@ application = ProtocolTypeRouter({
 [repo]: https://github.com/godd0t/django-drf-async
 [package-status]: https://img.shields.io/badge/package--status-production-green
 [pypi]: https://pypi.org/project/django-idp-user/
-[pypi-badge]: https://badge.fury.io/py/django-idp-user.svg
-[hatch]: https://github.com/pypa/hatch
-[hatch-badge]: https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg
+[pypi-badge]: https://img.shields.io/badge/version-2.1.37-blue
 [github-last-commit]: https://img.shields.io/github/last-commit/godd0t/django-idp-user
 [build-status-image]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml/badge.svg
 [build-status]: https://github.com/godd0t/django-idp-user/actions/workflows/workflow.yml
