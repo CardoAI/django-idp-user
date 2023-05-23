@@ -4,11 +4,6 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      target_repository:
-        description: 'Target repository'
-        required: true
-        default: 'godd0t/docs'
 
 permissions:
   contents: write

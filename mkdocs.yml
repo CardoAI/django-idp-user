@@ -1,7 +1,7 @@
 site_name: Django IDP User
 site_description: A Django app that handles the communication between the IDP and the products for the authorization of users.
-repo_name: CardoAI/idp-authentication
-repo_url: https://github.com/CardoAI/idp-authentication
+repo_name: godd0t/django-idp-user
+repo_url: https://github.com/godd0t/django-idp-user
 
 theme:
   name: material
@@ -24,7 +24,6 @@ theme:
   language: en
 plugins:
 - search
-- termynal
 
 nav:
 - Django IDP User: index.md
@@ -52,9 +51,3 @@ markdown_extensions:
     alternate_style: true
 - attr_list
 - md_in_html
-extra_css:
-- https://fastapi.tiangolo.com/css/termynal.css
-- https://fastapi.tiangolo.com/css/custom.css
-extra_javascript:
-- https://fastapi.tiangolo.com/js/termynal.js
-- https://fastapi.tiangolo.com/js/custom.js
