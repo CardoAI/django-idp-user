@@ -44,8 +44,8 @@ jobs:
   push-docs:
     runs-on: ubuntu-latest
     permissions:
-        contents: read, write
-        actions: read, write
+        contents: write
+        actions: read
     #    needs: build-lint-test
     steps:
       - name: Check out repository
