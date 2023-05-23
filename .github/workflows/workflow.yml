@@ -41,18 +41,19 @@ jobs:
 #      - name: Test with pytest
 #        run: |
 #          make test
-push-docs:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout private action
-      uses: actions/checkout@v2
-      with:
-        repository: godd0t/push-docs-action
-        token: ${{ secrets.PAT_TOKEN }}
-        path: ./.github/actions/push-docs-action
-    - name: Push docs
-      uses: ./.github/actions/push-docs-action
-      with:
-        target_repository: 'godd0t/docs'
-        pat_token: ${{ secrets.PAT_TOKEN }}
-        token: ${{ secrets.PAT_TOKEN }}
+  push-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout private action
+        uses: actions/checkout@v2
+        with:
+          repository: godd0t/push-docs-action
+          token: ${{ secrets.PAT_TOKEN }}
+          path: ./.github/actions/push-docs-action
+      - name: Push docs
+        uses: ./.github/actions/push-docs-action
+        with:
+          target_repository: 'godd0t/docs'
+          pat_token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
+
