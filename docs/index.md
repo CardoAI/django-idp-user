@@ -173,6 +173,7 @@ application = ProtocolTypeRouter({
   * If not set, the value of ``APP_ENV`` will be used.
 
 
+
 [repo]: https://github.com/godd0t/django-drf-async
 [package-status]: https://img.shields.io/badge/package--status-production-green
 [pypi]: https://pypi.org/project/django-idp-user/
