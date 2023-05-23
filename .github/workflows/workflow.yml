@@ -3,8 +3,6 @@ name: CI
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       target_repository:
@@ -55,7 +53,7 @@ jobs:
           repository: godd0t/docs
           token: ${{ secrets.PAT_TOKEN }}
           path: docs_repo
-          ref: gh-pages
+          ref: main
 
       - name: Create repo subdirectory
         run: |
@@ -79,4 +77,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Update docs for ${{ github.repository }}" -a
-          git push origin gh-pages
+          git push origin main
