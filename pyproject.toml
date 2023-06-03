@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "django-idp-user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
 requires-python = ">=3.9"
+readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
@@ -33,10 +34,6 @@ dependencies = [
     "requests",
 ]
 dynamic = ["version"]
-
-[project.readme]
-file = "README.md"
-content-type = "text/markdown"
 
 [project.license]
 file = "LICENSE"
@@ -67,25 +64,25 @@ name = "Lirim Shala"
 
 [project.optional-dependencies]
 async = [
-    "Django >=4.2",
-    "aiokafka",
-    "aiohttp",
+    "aiohttp ==3.8.4",
+    "aiokafka ==0.8.1",
+    "Django ==4.2.1",
 ]
 dev = [
+    "black ==23.3.0",
+    "build ==0.10.0",
+    "coverage ==7.2.5",
+    "Faker ==18.9.0",
+    "pre-commit ==3.3.2",
     "pytest ==7.3.1",
     "pytest-django ==4.5.2",
-    "Faker ==18.9.0",
     "pytest-sugar ==0.9.7",
     "ruff ==0.0.269",
-    "black ==23.3.0",
-    "coverage[toml] ==7.2.5",
-    "build ==0.10.0",
-    "pre-commit ==3.3.2"
 ]
 docs = [
-    "mkdocs-material ==9.1.14",
     "mdx-include ==1.4.2",
     "mkdocs-markdownextradata-plugin ==0.2.5",
+    "mkdocs-material ==9.1.14",
     "termynal ==0.3.0",
 ]
 
