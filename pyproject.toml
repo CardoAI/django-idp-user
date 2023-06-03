@@ -89,8 +89,9 @@ docs = [
     "termynal ==0.3.0",
 ]
 
-[tool.hatchling]
+[tool.hatch.metadata]
 allow-direct-references = true
+allow-ambiguous-features = true
 
 [tool.hatch.version]
 path = "idp_user/__init__.py"
