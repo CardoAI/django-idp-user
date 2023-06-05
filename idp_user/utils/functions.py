@@ -57,13 +57,7 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
     We have to find the bootstrap servers and create the connection using them.
     """
     if kafka_arn := settings.KAFKA_ARN:
-        session = boto3.Session(
-            aws_access_key_id=settings.KAFKA_AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=base64.b64decode(
-                settings.KAFKA_AWS_SECRET_ACCESS_KEY
-            ).decode("utf-8"),
-        )
-        resource = session.client("kafka", region_name=AWS_S3_REGION_NAME)
+        resource = boto3.client("kafka", region_name=AWS_S3_REGION_NAME)
         response = resource.get_bootstrap_brokers(
             ClusterArn=base64.b64decode(kafka_arn).decode("utf-8")
         )
