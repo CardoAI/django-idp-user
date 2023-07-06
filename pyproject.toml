@@ -1,0 +1,188 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "django-idp-user"
+description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
+requires-python = ">=3.9"
+readme = "README.md"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "Pyjwt ==2.6.0",
+    "boto3",
+    "Django",
+    "djangorestframework",
+    "drf-spectacular",
+    "faust-streaming",
+    "requests",
+]
+dynamic = ["version"]
+
+[project.license]
+file = "LICENSE"
+
+[[project.authors]]
+email = "hello@cardoai.com"
+
+[[project.authors]]
+name = "Mahmoud Al-Rawy"
+
+[[project.authors]]
+name = "Euron Metaliaj"
+
+[[project.authors]]
+name = "Klajdi Çaushi"
+
+[[project.authors]]
+name = "Aleksandër Nasto"
+
+[[project.authors]]
+name = "Andi Çuku"
+
+[[project.authors]]
+name = "Klement Omeri"
+
+[[project.authors]]
+name = "Lirim Shala"
+
+[project.optional-dependencies]
+async = [
+    "aiohttp ==3.8.4",
+    "aiokafka ==0.8.1",
+    "Django ==4.2.1",
+]
+dev = [
+    "black ==23.3.0",
+    "build ==0.10.0",
+    "coverage ==7.2.5",
+    "Faker ==18.9.0",
+    "pre-commit ==3.3.2",
+    "pytest ==7.3.1",
+    "pytest-django ==4.5.2",
+    "pytest-sugar ==0.9.7",
+    "ruff ==0.0.269",
+]
+docs = [
+    "mdx-include ==1.4.2",
+    "mkdocs-markdownextradata-plugin ==0.2.5",
+    "mkdocs-material ==9.1.14",
+    "termynal ==0.3.0",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+allow-ambiguous-features = true
+
+[tool.hatch.version]
+path = "idp_user/__init__.py"
+
+[tool.hatch.build]
+exclude = [
+    "/docs",
+    "/scripts",
+    "/tests",
+    "/venv",
+    "/.gitignore",
+    "/Makefile",
+    "/mkdocs.yml",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["idp_user"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --force-sugar --no-migrations --reuse-db --log-cli-level=INFO"
+testpaths = ["tests"]
+pythonpath = [
+    ".",
+    "idp_user",
+]
+python_files = "tests.py test_*.py *_tests.py"
+DJANGO_SETTINGS_MODULE = "tests.test_settings"
+filterwarnings = [
+    "ignore::DeprecationWarning:kombu.*:",
+    "ignore::DeprecationWarning:celery.*:",
+]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = "true"
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "import*",
+    "def __str__",
+    "def on_success",
+    "def clean",
+]
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/urls.py",
+    "*/settings/*",
+    "*/wsgi.py",
+    "manage.py",
+    "*__init__.py",
+]
+source = ["idp_user"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+extend-exclude = """
+^(.*/)?migrations/.*$
+"""
+
+[tool.ruff]
+format = "grouped"
+line-length = 88
+extend-exclude = [
+    ".migrations",
+    ".media",
+    ".static",
+    "manage.py",
+    ".test_data",
+    "__init__.py",
+]
+select = [
+    "E",
+    "F",
+]
+ignore = [
+    "E501",
+    "B008",
+    "C901",
+    "F405",
+]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+target-version = "py311"
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.isort]
+force-to-top = ["idp_user"]
+known-first-party = ["idp_user"]

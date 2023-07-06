@@ -2,7 +2,9 @@ from django.db import models
 
 
 class UserRole(models.Model):
-    user = models.ForeignKey(to="idp_user.User", related_name="user_roles", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        to="idp_user.User", related_name="user_roles", on_delete=models.CASCADE
+    )
     role = models.CharField(max_length=140)
     # This dictionary contains explicit restrictions about the app entities that the user can access, in the form:
     # {<entity_type>: [1, 2]}
@@ -12,4 +14,4 @@ class UserRole(models.Model):
     permission_restrictions = models.JSONField(default=dict)
 
     class Meta:
-        unique_together = [('user', 'role')]
+        unique_together = [("user", "role")]
