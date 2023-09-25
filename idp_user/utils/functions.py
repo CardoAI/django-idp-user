@@ -62,10 +62,10 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
             ClusterArn=base64.b64decode(kafka_arn).decode("utf-8")
         )
         assert (
-                "BootstrapBrokerString" in response.keys()
+                "BootstrapBrokerStringTls" in response.keys()
         ), "Something went wrong while receiving kafka servers!"
 
-        bootstrap_servers = response.get("BootstrapBrokerString").split(",")
+        bootstrap_servers = response.get("BootstrapBrokerStringTls").split(",")
         if not include_uri_scheme:
             return bootstrap_servers
         return [f"kafka://{host}" for host in bootstrap_servers]
