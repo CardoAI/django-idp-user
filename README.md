@@ -151,7 +151,7 @@ application = ProtocolTypeRouter({
 [repo]: https://github.com/CardoAI/django-idp-user
 [package-status]: https://img.shields.io/badge/package--status-production-green
 [pypi]: https://pypi.org/project/django-idp-user/
-[pypi-badge]: https://img.shields.io/badge/version-2.2.0.dev1-blue
+[pypi-badge]: https://img.shields.io/badge/version-2.3.0
 [github-last-commit]: https://img.shields.io/github/last-commit/CardoAI/django-idp-user
 [build-status-image]: https://github.com/CardoAI/django-idp-user/actions/workflows/workflow.yml/badge.svg
 [build-status]: https://github.com/CardoAI/django-idp-user/actions/workflows/workflow.yml
