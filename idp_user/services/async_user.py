@@ -1,48 +1,42 @@
 import logging
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any, Optional, Union
 
-from django.conf import settings
-from django.core.cache import cache
-from django.db import models, transaction
+from asgiref.sync import sync_to_async
+from django.core.exceptions import PermissionDenied
+from django.db import models
 from django.db.models import Q, QuerySet
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.request import Request
+from django.http import HttpRequest
 
-from idp_user.models import UserRole
-from idp_user.models.user import User
-from idp_user.services.base_user import BaseUserService
-from idp_user.settings import APP_ENTITIES, APP_IDENTIFIER, IN_DEV, ROLES, TENANTS
-from idp_user.signals import (
-    post_create_idp_user,
-    post_update_idp_user,
-    pre_update_idp_user,
-)
+from idp_user.models import User
+from idp_user.models.user_role import UserRole
+from idp_user.settings import APP_ENTITIES, ROLES
+from idp_user.signals import post_create_idp_user
 from idp_user.utils.functions import (
     cache_user_service_results,
     get_or_none,
     keep_keys,
+    parse_query_params_from_scope,
     update_record,
 )
-from idp_user.utils.typing import (
-    ALL,
-    AppEntityTypeConfig,
-    UserRecordDict,
-    UserTenantData,
-)
+from idp_user.utils.typing import ALL, AppEntityTypeConfig, UserTenantData
 
 logger = logging.getLogger(__name__)
 
 
-class UserService(BaseUserService):
+class UserServiceAsync:
     # Service Methods Used by Django Application
     @staticmethod
-    def get_role(request: Request):
+    def get_role(request: HttpRequest):
         return request.query_params.get("role")
 
     @staticmethod
-    def authorize_and_get_records_or_get_all_allowed(
+    async def get_role_from_scope(scope):
+        query_params = parse_query_params_from_scope(scope)
+        return query_params.get("role")[0] if query_params.get("role") else None
+
+    @staticmethod
+    async def authorize_and_get_records_or_get_all_allowed(
         user: User,
         role: ROLES,
         app_entity_type: str,
@@ -67,26 +61,26 @@ class UserService(BaseUserService):
         """
 
         if not app_entity_records_identifiers:
-            return UserService.get_allowed_app_entity_records(
+            return await UserServiceAsync.get_allowed_app_entity_records(
                 user=user,
                 role=role,
                 app_entity_type=app_entity_type,
                 permission=permission,
             )
-        UserService.authorize_app_entity_records(
+        await UserServiceAsync.authorize_app_entity_records(
             user=user,
             role=role,
             app_entity_type=app_entity_type,
             app_entity_records_identifiers=app_entity_records_identifiers,
             permission=permission,
         )
-        return UserService._get_records(
+        return await UserServiceAsync._get_records(
             app_entity_type=app_entity_type,
             records_identifiers=app_entity_records_identifiers,
         )
 
     @staticmethod
-    def authorize_app_entity_records(
+    async def authorize_app_entity_records(
         user: User,
         role: ROLES,
         app_entity_type: str,
@@ -112,16 +106,14 @@ class UserService(BaseUserService):
         assert (
             app_entity_type in APP_ENTITIES.keys()
         ), f"Unknown app entity: {app_entity_type}!"
-
         allowed_app_entity_records_identifiers = (
-            UserService._get_allowed_app_entity_records_identifiers(
+            await UserServiceAsync._get_allowed_app_entity_records_identifiers(
                 user=user,
                 role=role,
                 app_entity_type=app_entity_type,
                 permission=permission,
             )
         )
-
         if allowed_app_entity_records_identifiers == ALL:
             return
 
@@ -133,7 +125,7 @@ class UserService(BaseUserService):
             )
 
     @staticmethod
-    def get_allowed_app_entity_records(
+    async def get_allowed_app_entity_records(
         user: User, role: ROLES, app_entity_type: str, permission: str = None
     ) -> models.QuerySet:
         """
@@ -155,49 +147,47 @@ class UserService(BaseUserService):
         ), f"Unknown app entity: {app_entity_type}!"
 
         allowed_app_entity_records_identifiers = (
-            UserService._get_allowed_app_entity_records_identifiers(
+            await UserServiceAsync._get_allowed_app_entity_records_identifiers(
                 user=user,
                 role=role,
                 app_entity_type=app_entity_type,
                 permission=permission,
             )
         )
-
-        return UserService._get_records(
+        return await UserServiceAsync._get_records(
             app_entity_type=app_entity_type,
             records_identifiers=allowed_app_entity_records_identifiers,
         )
 
     @staticmethod
-    def _get_app_entity_type_configs(app_entity_type: str) -> AppEntityTypeConfig:
+    async def _get_app_entity_type_configs(app_entity_type: str) -> AppEntityTypeConfig:
         try:
             return APP_ENTITIES[app_entity_type]
-        except KeyError:
+        except KeyError as e:
             raise KeyError(
                 f"No config declared for app_entity_type={app_entity_type} "
                 f"in IDP_USER_APP['APP_ENTITIES']!"
-            ) from None
+            ) from e
 
     @staticmethod
-    def _get_records(
+    async def _get_records(
         app_entity_type: str, records_identifiers: Union[list[Any], ALL]
     ) -> models.QuerySet:
-        app_entity_type_configs = UserService._get_app_entity_type_configs(
+        app_entity_type_configs = await UserServiceAsync._get_app_entity_type_configs(
             app_entity_type
         )
         model = app_entity_type_configs["model"]
 
         if records_identifiers == ALL:
-            return model.objects.all()
-        else:
-            model_identifier_attr = app_entity_type_configs["identifier_attr"]
-            return model.objects.filter(
-                **{f"{model_identifier_attr}__in": records_identifiers}
-            )
+            return await sync_to_async(list)(model.objects.all())
+        model_identifier_attr = app_entity_type_configs["identifier_attr"]
+        return await sync_to_async(model.objects.filter)(
+            **{f"{model_identifier_attr}__in": records_identifiers}
+        )
 
     @staticmethod
     @cache_user_service_results
-    def _get_allowed_app_entity_records_identifiers(
+    async def _get_allowed_app_entity_records_identifiers(
         user: User, role: ROLES, app_entity_type: str, permission: str = None
     ) -> Union[list[Any], ALL]:
         """
@@ -217,7 +207,7 @@ class UserService(BaseUserService):
         assert ROLES.as_dict().get(role) is not None, f"Role does not exist: {role}"
 
         try:
-            user_role = UserRole.objects.get(user=user, role=role)
+            user_role = await UserRole.objects.aget(user=user, role=role)
         except UserRole.DoesNotExist:
             return []
 
@@ -241,8 +231,10 @@ class UserService(BaseUserService):
         return ALL
 
     @staticmethod
-    def _create_or_update_user(data: UserTenantData) -> User:
-        user = get_or_none(User.objects, username=data.get("username"))
+    async def _create_or_update_user(data: UserTenantData) -> User:
+        user = await sync_to_async(get_or_none)(
+            User.objects, username=data.get("username")
+        )
         user_data = keep_keys(
             data,
             [
@@ -257,79 +249,14 @@ class UserService(BaseUserService):
             ],
         )
         if user:
-            update_record(user, **user_data)
-            UserService._invalidate_user_cache_entries(user=user)
-            return user
+            await sync_to_async(update_record)(user, **user_data)
         else:
-            user = User.objects.create(**user_data)
-            post_create_idp_user.send(sender=UserService, user=user)
-
-            return user
-
-    @staticmethod
-    def _invalidate_user_cache_entries(user: User):
-        """
-        Invalidate all the entries in the cache for the given user.
-        To do this, find all the entries that start with the app identifier and username of the user.
-        """
-        if settings.IDP_USER_APP.get("USE_REDIS_CACHE", False) and not IN_DEV:
-            cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
-
-    @classmethod
-    def process_user(cls, data: UserRecordDict):
-        """
-        Extract tenants from the user record and call _update_user for each tenant.
-        Remove tenant information from the payload of _update_user since it is not needed
-        inside of it.
-
-        Send signals before and after calling the _update_user method for each tenant
-        separately. This gives possibility to the project to react on the user update.
-
-        One case of handling this signal is to switch database connection to the tenant's
-        database. In this way the user can be updated in the correct database.
-
-        """
-        reported_user_app_configs = UserService._get_reported_user_app_configs(data)
-        tenants = reported_user_app_configs.keys()
-
-        for tenant in tenants:
-            if tenant not in TENANTS:
-                logger.info(f"Tenant {tenant} not present, skipping.")
-                continue
-
-            logger.info(f"Updating user {data['username']} for tenant {tenant}")
-            pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
-
-            # Extract specific tenant information
-            user_record_for_tenant = deepcopy(data)
-            user_record_for_tenant["app_specific_configs"] = reported_user_app_configs[
-                tenant
-            ]
-
-            try:
-                with transaction.atomic(using=tenant):
-                    UserService._update_user(user_record_for_tenant)  # type: ignore
-            finally:
-                post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
-
-    @classmethod
-    def verify_if_user_exists_and_delete_roles(cls, data: UserRecordDict):
-        """
-        Verify if the user exists in any of the tenants and delete all the roles associated with it.
-        """
-        for tenant in TENANTS:
-            pre_update_idp_user.send(sender=cls.__class__, tenant=tenant)
-
-            if user := get_or_none(User.objects, username=data["username"]):
-                logger.info(
-                    f"Deleting roles for user {data['username']} in tenant {tenant}"
-                )
-                UserRole.objects.filter(user=user).delete()  # type: ignore
-
-            post_update_idp_user.send(sender=cls.__class__, tenant=tenant)
+            user = await User.objects.acreate(**user_data)
+            post_create_idp_user.send(sender=UserServiceAsync, user=user)
+        return user
 
     @staticmethod
-    def _update_user(data: UserTenantData):
+    async def _update_user(data: UserTenantData):
         """
         This method makes sure that the changes that are coming from the IDP
         for a user are propagated in the internal product Authorization Schemas
@@ -338,17 +265,17 @@ class UserService(BaseUserService):
         Step 2: Create/Update/Delete User Roles for this user.
         """
 
-        user = UserService._create_or_update_user(data)
+        user = await UserServiceAsync._create_or_update_user(data)
 
         current_user_roles = defaultdict()
-        for user_role in user.user_roles.all():
+        async for user_role in user.user_roles.all():
             current_user_roles[user_role.role] = user_role
 
         roles_data = data.get("app_specific_configs")
 
         for role, role_data in roles_data.items():
             if existing_user_role := current_user_roles.get(role):
-                update_record(
+                await sync_to_async(update_record)(
                     existing_user_role,
                     permission_restrictions=role_data.get("permission_restrictions"),
                     app_entities_restrictions=role_data.get(
@@ -356,7 +283,7 @@ class UserService(BaseUserService):
                     ),
                 )
             else:
-                UserRole.objects.create(
+                await UserRole.objects.acreate(
                     user=user,
                     role=role,
                     permission_restrictions=role_data.get("permission_restrictions"),
@@ -372,11 +299,7 @@ class UserService(BaseUserService):
                 user_role.delete()
 
     @staticmethod
-    def _get_reported_user_app_configs(data):
-        return data.get("app_specific_configs", {}).get(APP_IDENTIFIER, {})
-
-    @staticmethod
-    def get_users_with_access_to_app_entity_record(
+    async def get_users_with_access_to_app_entity_record(
         app_entity_type: str, record_identifier: Any, roles: list[str]
     ) -> QuerySet:
         """
@@ -387,7 +310,7 @@ class UserService(BaseUserService):
             app_entity_type in APP_ENTITIES.keys()
         ), f"Unknown app entity: {app_entity_type}!"
 
-        roles = UserRole.objects.filter(
+        roles = await sync_to_async(UserRole.objects.filter)(
             Q(user__is_active=True)
             & Q(role__in=roles)
             & (
@@ -400,7 +323,13 @@ class UserService(BaseUserService):
                 )
             )
         )
-
-        return User.objects.filter(
+        return await sync_to_async(User.objects.filter)(
             pk__in=list(roles.values_list("user__pk", flat=True))
         )
+
+    @staticmethod
+    async def get_user(username: str) -> User:
+        """
+        Get user by username
+        """
+        return await sync_to_async(get_or_none)(User.objects, username=username)

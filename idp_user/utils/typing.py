@@ -1,8 +1,8 @@
-from typing import TypedDict, Union, List, Any, Optional, Type
+from typing import Any, List, Optional, Type, TypedDict, Union
 
 from django.db import models
 
-ALL = 'all'
+ALL = "all"
 
 
 class JwtData(TypedDict):
@@ -74,7 +74,9 @@ class UserTenantData(TypedDict):
 AppIdentifier = str
 TenantIdentifier = str
 
-UserRecordAppSpecificConfigs = dict[AppIdentifier, dict[TenantIdentifier, AppSpecificConfigs]]
+UserRecordAppSpecificConfigs = dict[
+    AppIdentifier, dict[TenantIdentifier, AppSpecificConfigs]
+]
 
 
 class UserRecordDict(TypedDict):

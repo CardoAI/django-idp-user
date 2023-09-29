@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+from urllib.parse import parse_qs
 
 import boto3
 from django.conf import settings
@@ -29,7 +30,8 @@ def update_record(record, save=True, **data):
 
 
 def cache_user_service_results(function):
-    from idp_user.settings import APP_IDENTIFIER
+    from idp_user.settings import APP_IDENTIFIER, IN_DEV
+
     def wrapper(user, *args, **kwargs):
         cache_key = f"{APP_IDENTIFIER}-{user.username}-{function.__name__}"
         for arg in args:
@@ -40,12 +42,10 @@ def cache_user_service_results(function):
         result = cache.get(cache_key)
         if result:
             return json.loads(result)
-        else:
-            result = function(user=user, *args, **kwargs)
-            cache.set(cache_key, json.dumps(result))
-            return result
+        result = function(user=user, *args, **kwargs)  # noqa
+        cache.set(cache_key, json.dumps(result))
+        return result
 
-    from idp_user.settings import IN_DEV
     if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
         return function
 
@@ -73,3 +73,16 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
     else:
         kafka_url = settings.KAFKA_BROKER
         return f"kafka://{kafka_url}" if include_uri_scheme else kafka_url
+
+
+def parse_query_params_from_scope(scope):
+    """
+    Parse query params from scope
+
+    Parameters:
+        scope (dict): scope from consumer
+
+    Returns:
+        dict: query params
+    """
+    return parse_qs(scope["query_string"].decode("utf-8"))

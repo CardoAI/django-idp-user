@@ -7,7 +7,7 @@ from idp_user.auth.authentication import AuthenticationBackend
 
 class BearerTokenScheme(OpenApiAuthenticationExtension):
     target_class = AuthenticationBackend  # full import path OR class ref
-    name = 'IDPAuthentication'  # name used in the schema
+    name = "IDPAuthentication"  # name used in the schema
 
     def get_security_definition(self, auto_schema):
         return {
@@ -20,5 +20,7 @@ class BearerTokenScheme(OpenApiAuthenticationExtension):
 class AutoSchemaWithRole(AutoSchema):
     def get_override_parameters(self):
         return [
-            OpenApiParameter("role", type=str, location=OpenApiParameter.QUERY, required=True),
+            OpenApiParameter(
+                "role", type=str, location=OpenApiParameter.QUERY, required=True
+            ),
         ]
