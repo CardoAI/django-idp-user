@@ -1,4 +1,4 @@
-__version__ = "2.2.0.dev2"
+__version__ = "2.3.0"
 from idp_user import checks, signals  # noqa
 
 
