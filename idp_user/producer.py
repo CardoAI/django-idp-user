@@ -6,6 +6,7 @@ from kafka import KafkaProducer
 
 from idp_user.utils.classes import Singleton
 from idp_user.utils.functions import get_kafka_bootstrap_servers
+import ssl
 
 
 class Producer(metaclass=Singleton):
@@ -16,6 +17,8 @@ class Producer(metaclass=Singleton):
             bootstrap_servers=get_kafka_bootstrap_servers(include_uri_scheme=False),
             value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode('utf-8'),
             api_version=(2, 6, 2),
+            ssl_context=ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH),
+            security_protocol="SSL"
         )
 
     def send_message(self, topic: str, key: str, data: dict):
