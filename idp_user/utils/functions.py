@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 
 import boto3
 from django.conf import settings
@@ -28,8 +29,7 @@ def update_record(record, save=True, **data):
 
 
 def cache_user_service_results(function):
-    from idp_user.settings import APP_IDENTIFIER, IN_DEV
-
+    from idp_user.settings import APP_IDENTIFIER
     def wrapper(user, *args, **kwargs):
         cache_key = f"{APP_IDENTIFIER}-{user.username}-{function.__name__}"
         for arg in args:
@@ -45,6 +45,7 @@ def cache_user_service_results(function):
             cache.set(cache_key, json.dumps(result))
             return result
 
+    from idp_user.settings import IN_DEV
     if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
         return function
 
@@ -56,10 +57,8 @@ def get_kafka_bootstrap_servers(include_uri_scheme=True):
     If ARN is available, it means we can connect to the production servers.
     We have to find the bootstrap servers and create the connection using them.
     """
-    from idp_user.settings import AWS_S3_REGION_NAME
-
     if kafka_arn := settings.KAFKA_ARN:
-        resource = boto3.client("kafka", region_name=AWS_S3_REGION_NAME)
+        resource = boto3.client("kafka", region_name=os.getenv("AWS_REGION", "eu-central-1"))
         response = resource.get_bootstrap_brokers(
             ClusterArn=base64.b64decode(kafka_arn).decode("utf-8")
         )
