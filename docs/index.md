@@ -42,7 +42,7 @@ INSTALLED_APPS = [
 
 Add the settings of the app in `settings.py` like this:
 ```python
-APP_ENV = "development" or "staging" or "production"
+APP_ENV = "development" or "staging" or "production" or "demo"
 
 AUTH_USER_MODEL = 'idp_user.User'
 

@@ -29,7 +29,7 @@
 
 3. Add the settings of the app in `settings.py` like this:
     ```python
-    APP_ENV = "development" or "staging" or "production"
+    APP_ENV = "development" or "staging" or "production" or "demo"
 
     AUTH_USER_MODEL = 'idp_user.User'
 
@@ -46,7 +46,7 @@
                 "label_attr": "<field_name>",
             }
         },
-        "CONSUMER_APP_ENV": "development" or "staging" or "production", # Optional
+        "CONSUMER_APP_ENV": "staging" or "production", # Optional
     }
 
     REST_FRAMEWORK = {

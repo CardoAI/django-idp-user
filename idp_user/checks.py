@@ -24,11 +24,12 @@ def check_idp_user_settings(*args, **kwargs):
             "development",
             "staging",
             "production",
+            "demo",
         ]:
             issues.append(
                 Error(
                     "Wrong APP_ENV.",
-                    hint="You must declare the APP_ENV (development/staging/production) variable in settings.py.",
+                    hint="You must declare the APP_ENV (development/staging/production/demo) variable in settings.py.",
                     obj=settings,
                     id="idp_user.E000",
                 )
