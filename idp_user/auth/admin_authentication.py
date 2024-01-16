@@ -1,5 +1,6 @@
 from typing import Optional
 
+import jwt
 import requests
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
@@ -17,11 +18,16 @@ class IDPAuthBackend(ModelBackend):
         if not access_token:
             return None
 
-        response = requests.get(
-            url=f"{IDP_URL}/api/users/me/",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
-        username = response.json()["username"]
+        try:
+            jwt_data = jwt.decode(
+                access_token,
+                algorithms=["HS256"],
+                options={"verify_signature": False},
+            )
+        except jwt.DecodeError:
+            return None
+
+        username = jwt_data["username"]
         return get_or_none(User.objects, username=username)
 
     @staticmethod
@@ -36,3 +42,9 @@ class IDPAuthBackend(ModelBackend):
 
         if response.status_code == HTTP_200_OK:
             return response.json()["access"]
+
+    def has_module_perms(self, user_obj, app_label):
+        return user_obj.is_active and user_obj.is_staff
+
+    def has_perm(self, user_obj, perm, obj=None):
+        return user_obj.is_active and user_obj.is_staff
