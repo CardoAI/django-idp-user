@@ -32,6 +32,7 @@ dependencies = [
     "drf-spectacular",
     "faust-streaming",
     "requests",
+    "kafka-python",
 ]
 dynamic = ["version"]
 

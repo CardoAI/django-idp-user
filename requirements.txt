@@ -9,3 +9,4 @@ asgiref
 pytest
 aiohttp
 aiokafka
+kafka-python
