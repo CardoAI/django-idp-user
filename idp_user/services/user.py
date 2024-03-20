@@ -354,6 +354,7 @@ class UserService(BaseUserService):
                     app_entities_restrictions=role_data.get(
                         "app_entities_restrictions"
                     ),
+                    organization=role_data.get("organization")
                 )
             else:
                 UserRole.objects.create(
@@ -363,6 +364,7 @@ class UserService(BaseUserService):
                     app_entities_restrictions=role_data.get(
                         "app_entities_restrictions"
                     ),
+                    organization=role_data.get("organization")
                 )
 
         # Verify if any of the previous user roles is not being reported anymore
@@ -403,4 +405,25 @@ class UserService(BaseUserService):
 
         return User.objects.filter(
             pk__in=list(roles.values_list("user__pk", flat=True))
+        )
+
+    @staticmethod
+    def get_organization_names() -> list[str]:
+        """Get the names of all organizations."""
+
+        return list(UserRole.objects.exclude(organization=None).values_list("organization", flat=True).distinct())
+
+    @staticmethod
+    def get_organization_users(organization_name: str) -> QuerySet[User]:
+        """
+        Get users that belong to the given organization.
+        """
+
+        roles = UserRole.objects.filter(
+            user__is_active=True,
+            organization=organization_name
+        )
+
+        return User.objects.filter(
+            id__in=list(roles.values_list("user__id", flat=True))
         )

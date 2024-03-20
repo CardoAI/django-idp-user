@@ -26,6 +26,7 @@ class UserFeaturesPermissions(TypedDict):
 class AppSpecificConfigs(TypedDict):
     app_entities_restrictions: Optional[dict[str, list]]
     permission_restrictions: dict[str, Union[bool, Any]]
+    organization: Optional[str]
 
 
 Role = str

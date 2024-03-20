@@ -281,6 +281,7 @@ class UserServiceAsync:
                     app_entities_restrictions=role_data.get(
                         "app_entities_restrictions"
                     ),
+                    organization=role_data.get("organization")
                 )
             else:
                 await UserRole.objects.acreate(
@@ -290,6 +291,7 @@ class UserServiceAsync:
                     app_entities_restrictions=role_data.get(
                         "app_entities_restrictions"
                     ),
+                    organization=role_data.get("organization")
                 )
 
         # Verify if any of the previous user roles is not being reported anymore
