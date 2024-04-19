@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "django-idp-user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
 requires-python = ">=3.9"
-version = "2.4.0"
+version = "2.5.0.dev0"
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -29,8 +29,6 @@ dependencies = [
     "Pyjwt ==2.6.0",
     "boto3",
     "Django",
-    "djangorestframework",
-    "drf-spectacular",
     "faust-streaming",
     "requests",
     "kafka-python",
@@ -65,9 +63,16 @@ name = "Lirim Shala"
 
 [project.optional-dependencies]
 async = [
-    "aiohttp ==3.8.4",
-    "aiokafka ==0.8.1",
-    "Django ==4.2.1",
+    "aiohttp >=3.8.4",
+    "aiokafka >=0.8.1",
+    "Django >=4.2.1",
+]
+drf = [
+    "djangorestframework",
+    "drf-spectacular",
+]
+ninja = [
+    "django-ninja",
 ]
 dev = [
     "black ==23.3.0",

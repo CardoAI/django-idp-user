@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from idp_user.auth.authentication import AuthenticationBackend
+from idp_user.auth.drf_authentication import AuthenticationBackend
 
 
 @pytest.fixture(scope="session")
@@ -22,7 +22,7 @@ def enable_db_access_for_all_tests(db):
 
 
 @pytest.fixture
-def auth_backend():
+def auth_backend() -> AuthenticationBackend:
     return AuthenticationBackend()
 
 

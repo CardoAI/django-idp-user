@@ -10,3 +10,4 @@ pytest
 aiohttp
 aiokafka
 kafka-python
+django-ninja

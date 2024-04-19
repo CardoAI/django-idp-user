@@ -31,7 +31,8 @@ class IDPChannelsAuthenticationMiddleware:
 
         return await self.app(scope, receive, send)
 
-    async def _get_username(self, access_token):
+    @staticmethod
+    async def _get_username(access_token):
         headers = {"Authorization": f"Bearer {access_token}"}
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(f"{IDP_URL}/api/users/me/") as resp:

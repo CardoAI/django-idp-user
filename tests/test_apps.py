@@ -1,5 +1,3 @@
-from os import getenv
-
 from django.apps import AppConfig
 
 
