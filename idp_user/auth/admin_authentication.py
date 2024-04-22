@@ -1,12 +1,12 @@
 from typing import Optional
 
-import jwt
 import requests
 from django.conf import settings
 from django.contrib.auth.backends import ModelBackend
+from jwt.exceptions import InvalidTokenError
 
 from idp_user.models.user import User
-from idp_user.utils.functions import get_or_none
+from idp_user.utils.functions import get_or_none, get_jwt_payload
 
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
 HTTP_200_OK = 200
@@ -19,12 +19,8 @@ class IDPAuthBackend(ModelBackend):
             return None
 
         try:
-            jwt_data = jwt.decode(
-                access_token,
-                algorithms=["HS256"],
-                options={"verify_signature": False},
-            )
-        except jwt.DecodeError:
+            jwt_data = get_jwt_payload(access_token)
+        except InvalidTokenError:
             return None
 
         username = jwt_data["username"]
