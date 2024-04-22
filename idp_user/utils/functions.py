@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+from typing import Optional
 from urllib.parse import parse_qs
 
 import boto3
@@ -115,7 +116,7 @@ def get_jwt_payload(token: str) -> dict:
     )
 
 
-def authorize_request_with_idp(request: HttpRequest, token: str) -> str | None:
+def authorize_request_with_idp(request: HttpRequest, token: str) -> Optional[str]:
     """
     Validate token with IDP.
 
