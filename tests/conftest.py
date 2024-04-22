@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from idp_user.auth.drf_authentication import AuthenticationBackend
+from idp_user.auth.drf import AuthenticationBackend
 
 
 @pytest.fixture(scope="session")

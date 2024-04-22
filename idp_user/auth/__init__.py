@@ -1,2 +1,2 @@
-from .admin_authentication import IDPAuthBackend
-from .async_authentication import IDPChannelsAuthenticationMiddleware
+from .admin import IDPAuthBackend
+from .async_auth import IDPChannelsAuthenticationMiddleware

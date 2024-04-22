@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from idp_user.auth.drf_authentication import AuthenticationBackend
+from idp_user.auth.drf import AuthenticationBackend
 from idp_user.models.user import User
 from idp_user.utils.typing import JwtData
 
