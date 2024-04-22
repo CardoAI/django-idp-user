@@ -8,7 +8,6 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
-from rest_framework.request import Request
 
 from idp_user.models import UserRole
 from idp_user.models.user import User
@@ -38,7 +37,7 @@ logger = logging.getLogger(__name__)
 class UserService(BaseUserService):
     # Service Methods Used by Django Application
     @staticmethod
-    def get_role(request: Request):
+    def get_role(request):
         return request.query_params.get("role")
 
     @staticmethod

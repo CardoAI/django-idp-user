@@ -52,7 +52,7 @@ class DRFAuthenticationBackendWithIDPAuthorization(AuthenticationBackend):
 
         return token
 
-    def authenticate(self, request: Request):
+    def authenticate(self, request):
         token = self._get_token(request)
 
         if auth_error := authorize_request_with_idp(request, token):

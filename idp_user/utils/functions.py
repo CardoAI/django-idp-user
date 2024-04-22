@@ -11,7 +11,6 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
 from requests import HTTPError
-from rest_framework.request import Request
 
 APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
@@ -116,7 +115,7 @@ def get_jwt_payload(token: str) -> dict:
     )
 
 
-def authorize_request_with_idp(request: HttpRequest | Request, token: str) -> str | None:
+def authorize_request_with_idp(request: HttpRequest, token: str) -> str | None:
     """
     Validate token with IDP.
 
