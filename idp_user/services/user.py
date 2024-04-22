@@ -213,7 +213,8 @@ class UserService(BaseUserService):
         Returns:
             List of identifiers of App Entity Records that the user can access
         """
-        assert ROLES.as_dict().get(role) is not None, f"Role does not exist: {role}"
+        if ROLES.as_dict().get(role) is None:
+            raise PermissionDenied(f"Role does not exist: {role}")
 
         try:
             user_role = UserRole.objects.get(user=user, role=role)

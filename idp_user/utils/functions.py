@@ -4,6 +4,7 @@ import os
 from typing import Optional
 from urllib.parse import parse_qs
 
+import aiohttp
 import boto3
 import jwt
 import requests
@@ -11,10 +12,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest
-from requests import HTTPError
 
 APP_IDENTIFIER = settings.IDP_USER_APP.get("APP_IDENTIFIER")
 IDP_URL = settings.IDP_USER_APP.get("IDP_URL")
+IDP_VALIDATE_URL = f"{IDP_URL}/api/validate/"
 
 
 def keep_keys(dictionary, keys):
@@ -116,6 +117,24 @@ def get_jwt_payload(token: str) -> dict:
     )
 
 
+def _get_headers_for_idp_authorization(request: HttpRequest, token: str) -> dict:
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-Original-Method": request.method,
+        "X-Auth-Request-Redirect": request.get_full_path(),
+    }
+    if tenant := request.headers.get("X-TENANT"):
+        headers["X-TENANT"] = tenant
+    return headers
+
+
+def _get_query_params_for_idp_authorization(request: HttpRequest) -> dict:
+    query_params = {"app": APP_IDENTIFIER}
+    if tenant := request.headers.get("X-TENANT"):
+        query_params["tenant"] = tenant
+    return query_params
+
+
 def authorize_request_with_idp(request: HttpRequest, token: str) -> Optional[str]:
     """
     Validate token with IDP.
@@ -127,25 +146,37 @@ def authorize_request_with_idp(request: HttpRequest, token: str) -> Optional[str
     Return:
         The error message if any, otherwise None
     """
-    query_params = {"app": APP_IDENTIFIER}
-    if tenant := request.headers.get("X-TENANT"):
-        query_params["tenant"] = tenant
+    response = requests.get(
+        IDP_VALIDATE_URL,
+        params=_get_query_params_for_idp_authorization(request),
+        headers=_get_headers_for_idp_authorization(request, token),
+    )
 
-    try:
-        response = requests.get(
-            f"{IDP_URL}/api/validate/",
-            params=query_params,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "X-Original-Method": request.method,
-                "X-Auth-Request-Redirect": request.get_full_path(),
-            }
-        )
-        response.raise_for_status()
-    except HTTPError as e:
+    if not response.ok:
         try:
-            error_message = e.response.json().get("detail")
-        except Exception:
-            error_message = str(e)
+            return response.json().get("detail")
+        except Exception as error:
+            return str(error)
 
-        return error_message
+
+async def authorize_request_with_idp_async(request: HttpRequest, token: str) -> Optional[str]:
+    """
+    Validate token with IDP (async).
+
+    Args:
+        request: The original request
+        token: The JWT token provided
+
+    Return:
+        The error message if any, otherwise None
+    """
+    headers = _get_headers_for_idp_authorization(request, token)
+    params = _get_query_params_for_idp_authorization(request)
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(IDP_VALIDATE_URL, params=params) as response:
+            if not response.ok:
+                try:
+                    response_content = await response.json()
+                    return response_content.get("detail")
+                except Exception as error:
+                    return str(error)
