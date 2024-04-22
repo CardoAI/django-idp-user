@@ -5,9 +5,9 @@ from typing import Any, Optional, Union
 
 from django.conf import settings
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 
 from idp_user.models import UserRole
