@@ -68,7 +68,7 @@ class NinjaAuthBearerAsync(NinjaAuthBearer):
         return await self.authenticate(request, token)
 
 
-class NinjaAuthBearerWithIDPAuthorization(HttpBearer):
+class NinjaAuthBearerWithIDPAuthorization(NinjaAuthBearer):
     def authenticate(self, request: HttpRequest, token: str):
         auth_error = authorize_request_with_idp(request, token)
         if auth_error:
