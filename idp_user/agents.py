@@ -41,6 +41,7 @@ class UserRecord(faust.Record):
     is_superuser: bool
     date_joined: str
     app_specific_configs: dict
+    is_demo: bool
 
 
 USER_UPDATES_TOPIC_NAME = f"{CONSUMER_APP_ENV}_user_updates"
