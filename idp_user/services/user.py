@@ -254,6 +254,7 @@ class UserService(BaseUserService):
                 "is_staff",
                 "is_superuser",
                 "date_joined",
+                "is_demo"
             ],
         )
         if user:
