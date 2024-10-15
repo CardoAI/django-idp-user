@@ -112,7 +112,6 @@ def get_jwt_payload(token: str) -> dict:
     """
     return jwt.decode(
         token,
-        algorithms=["HS256"],
         options={"verify_signature": False},  # Signature is verified from IDP
     )
 
