@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "django-idp-user"
 description = "A Django app that handles the communication between the IDP and the products for the authorization of users."
 requires-python = ">=3.9"
-version = "2.6.3"
+version = "3.0.0.dev0"
 readme = "README.md"
 classifiers = [
     "Development Status :: 5 - Production/Stable",

@@ -12,7 +12,7 @@ from django.db.models import Q, QuerySet
 from idp_user.models import UserRole
 from idp_user.models.user import User
 from idp_user.services.base_user import BaseUserService
-from idp_user.settings import APP_ENTITIES, APP_IDENTIFIER, IN_DEV, ROLES, TENANTS
+from idp_user.settings import APP_ENTITIES, APP_IDENTIFIER, ROLES, TENANTS
 from idp_user.signals import (
     post_create_idp_user,
     post_update_idp_user,
@@ -273,7 +273,7 @@ class UserService(BaseUserService):
         Invalidate all the entries in the cache for the given user.
         To do this, find all the entries that start with the app identifier and username of the user.
         """
-        if settings.IDP_USER_APP.get("USE_REDIS_CACHE", False) and not IN_DEV:
+        if settings.IDP_USER_APP.get("USE_REDIS_CACHE", False):
             cache.delete_pattern(f"{APP_IDENTIFIER}-{user.username}*")
 
     @classmethod

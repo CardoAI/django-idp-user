@@ -28,12 +28,11 @@
     ```
 
 3. Add the settings of the app in `settings.py` like this:
-    ```python
-    APP_ENV = "development" or "staging" or "production" or "demo"
-
+    ```python3
     AUTH_USER_MODEL = 'idp_user.User'
 
     IDP_USER_APP = {
+        "IDP_ENVIRONMENT": "staging/production/etc.",
         "APP_IDENTIFIER": "str",
         "ROLES": "path.to.roles_choices",
         "FAUST_APP_PATH": "backend.kafka_consumer.app",
@@ -46,7 +45,6 @@
                 "label_attr": "<field_name>",
             }
         },
-        "CONSUMER_APP_ENV": "staging" or "production", # Optional
     }
 
     REST_FRAMEWORK = {
@@ -104,6 +102,12 @@ application = ProtocolTypeRouter({
 
 ## Settings Reference
 
+* ``IDP_ENVIRONMENT``
+
+  * The environment of the IDP with which the app will communicate.
+  * Used mainly for the Kafka Consumer & Producer.
+
+
 * ``APP_IDENTIFIER``
 
   * The app identifier, as defined in the IDP.
@@ -111,24 +115,20 @@ application = ProtocolTypeRouter({
 
 * ``ROLES``
 
-
   * The path to the roles choices.
 
 
 * ``FAUST_APP_PATH``
-
 
   * The path to the Faust app.
 
 
 * ``IDP_URL``
 
-
   * The URL of the IDP, used for local development, or when using the IDP as an Authentication Backend.
 
 
 * ``USE_REDIS_CACHE``
-
 
   * If True, the cache will be used
   * When developing locally, you can leave this as ``False``.
@@ -136,16 +136,9 @@ application = ProtocolTypeRouter({
 
 * ``APP_ENTITIES``
 
-
   * This dict links the AppEntityTypes declared on the IDP for this app to their actual models,
     so that they can be used for authorization purposes. In the value dicts, the attributes that will be
     used as the identifier and label are declared as well.
-
-
-* ``CONSUMER_APP_ENV``
-
-  * The environment of the Faust Kafka Consumer app.
-  * If not set, the value of ``APP_ENV`` will be used.
 
 
 [repo]: https://github.com/CardoAI/django-idp-user

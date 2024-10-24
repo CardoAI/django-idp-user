@@ -5,7 +5,7 @@ from django.core.checks import Error, Warning, register
 @register()
 def check_idp_user_settings(*args, **kwargs):
     def verify_idp_user_app_attr_exists(_attr, error=False):
-        if _attr not in idp_user_settings:
+        if _attr not in settings.IDP_USER_APP:
             issue_kwargs = {
                 "msg": f"Missing {_attr} in IDP_USER_APP.",
                 "hint": f"You must declare the attribute {_attr} in the dict IDP_USER_APP in settings.py.",
@@ -18,31 +18,6 @@ def check_idp_user_settings(*args, **kwargs):
                 issues.append(Warning(**issue_kwargs))
 
     issues = []
-
-    try:
-        if hasattr(settings, "APP_ENV") and settings.APP_ENV not in [
-            "development",
-            "staging",
-            "production",
-            "demo",
-        ]:
-            issues.append(
-                Error(
-                    "Wrong APP_ENV.",
-                    hint="You must declare the APP_ENV (development/staging/production/demo) variable in settings.py.",
-                    obj=settings,
-                    id="idp_user.E000",
-                )
-            )
-    except AttributeError:
-        issues.append(
-            Error(
-                "Missing APP_ENV.",
-                hint="You must declare the APP_ENV (development/staging/production) variable in settings.py.",
-                obj=settings,
-                id="idp_user.E001",
-            )
-        )
 
     try:
         auth_user_model = settings.AUTH_USER_MODEL
@@ -67,9 +42,7 @@ def check_idp_user_settings(*args, **kwargs):
         )
 
     try:
-        idp_user_settings = settings.IDP_USER_APP
-
-        for attr in ["APP_IDENTIFIER", "FAUST_APP_PATH"]:
+        for attr in ["IDP_ENVIRONMENT", "APP_IDENTIFIER", "FAUST_APP_PATH"]:
             verify_idp_user_app_attr_exists(attr, error=True)
 
         for attr in ["ROLES"]:

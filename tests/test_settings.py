@@ -42,10 +42,8 @@ TEMPLATES = [
 
 USE_TZ = True
 
-APP_ENV = "test"
-
 IDP_USER_APP = {
-    "CONSUMER_APP_ENV": "test",
+    "IDP_ENVIRONMENT": "test",
     "APP_IDENTIFIER": "test_app",
     "ROLES": "tests.test_roles.ROLES",
     # "FAUST_APP_PATH": "conf.kafka_consumer.app",

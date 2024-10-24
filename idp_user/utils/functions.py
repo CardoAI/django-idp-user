@@ -39,7 +39,7 @@ def update_record(record, save=True, **data):
 
 
 def cache_user_service_results(function):
-    from idp_user.settings import APP_IDENTIFIER, IN_DEV
+    from idp_user.settings import APP_IDENTIFIER
 
     def wrapper(user, *args, **kwargs):
         cache_key = f"{APP_IDENTIFIER}-{user.username}-{function.__name__}"
@@ -55,7 +55,7 @@ def cache_user_service_results(function):
         cache.set(cache_key, json.dumps(result))
         return result
 
-    if IN_DEV or not settings.IDP_USER_APP.get('USE_REDIS_CACHE', False):
+    if settings.IDP_USER_APP.get('USE_REDIS_CACHE', False) is False:
         return function
 
     return wrapper
