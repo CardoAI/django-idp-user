@@ -18,7 +18,6 @@ class Producer(metaclass=Singleton):
             value_serializer=lambda v: json.dumps(v, cls=DjangoJSONEncoder).encode(
                 "utf-8"
             ),
-            api_version=(2, 6, 2),
             ssl_context=ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH),
             security_protocol="SSL"
         )
