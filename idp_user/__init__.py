@@ -1,3 +1,3 @@
-from idp_user import checks, signals  # noqa
+from idp_user import signals  # noqa
 
 default_app_config = 'idp_user.apps.IDPUserConfig'
